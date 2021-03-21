@@ -20,6 +20,7 @@ typedef struct {
 min_heap *initialise_heap(int initial_size);
 void push(min_heap **heap, process *new_process);
 void swap_process(process *p1, process *p2);
+void print_process_heap_horizontally(min_heap *heap);
 
 void down_heap(int array[], int start_Index, int length);
 void heap_sort(int array[], int length);

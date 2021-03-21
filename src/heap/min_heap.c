@@ -124,14 +124,14 @@ void push(min_heap **heap, process *new_process) {
     // Fix heap: go up through the heap till you find a new spot for the last value. (upheap).
     while (index / 2 > 0) {
         
-        int parent_priority_1 = (*heap)->process_array)[index / 2]->remaining_run_time;
-        int parent_priority_2 = (*heap)->process_array)[index / 2]->pid;
+        int parent_priority_1 = ((*heap)->process_array)[index / 2]->remaining_run_time;
+        int parent_priority_2 = ((*heap)->process_array)[index / 2]->pid;
 
         if (parent_priority_1 < priority_1 || (parent_priority_1 == priority_1 && parent_priority_2 < priority_2)) {  // What if PID's are equal too ???) {
             break;
         } else {
             //swap parent with child
-            swap_process(&((*heap)->process_array)[index], &((*heap)->process_array)[index / 2]);
+            swap_process((((*heap)->process_array)[index]), (((*heap)->process_array)[index / 2]));
             index /= 2;
         }
     }
@@ -222,4 +222,18 @@ void print_heap_horizontally(int array[], int length) {
         printf("%d,", array[i]);
     }
     printf("%d]\n", array[i]);
+}
+
+
+/*
+Just for debugging
+*/
+void print_process_heap_horizontally(min_heap *heap) {
+    int heap_length = heap->length;
+    printf("[");
+    int i = 1;
+    for (i = 1; i < heap_length; i++) {
+        printf("(%d,%d)", (heap->process_array)[i]->remaining_run_time, (heap->process_array)[i]->pid);
+    }
+    printf("(%d,%d)]\n", (heap->process_array)[i]->remaining_run_time, (heap->process_array)[i]->pid);
 }
