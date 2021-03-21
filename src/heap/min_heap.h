@@ -1,26 +1,23 @@
 #ifndef MIN_HEAP
 #define MIN_HEAP
 
-// Put this somewhere else later !!!
-typedef struct {
-    int arrival_time;
-    int pid;  // priority 2
-    int run_time;
-    int parallelisable;
-    int remaining_run_time;  // priority 1
-} process;
+#include "stdbool.h"
+#include "../utils.h"
 
 typedef struct {
     process **process_array;
     int array_size;
-    int length;
+    int last_index;
 } min_heap;
 
 
 min_heap *initialise_heap(int initial_size);
 void push(min_heap **heap, process *new_process);
-void swap_process(process *p1, process *p2);
+process *pop(min_heap **heap);
 void print_process_heap_horizontally(min_heap *heap);
+bool is_empty(min_heap *heap);
+void free_min_heap(min_heap *heap);
+process *peek(min_heap *heap);
 
 void down_heap(int array[], int start_Index, int length);
 void heap_sort(int array[], int length);

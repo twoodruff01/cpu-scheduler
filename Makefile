@@ -11,7 +11,7 @@ all: $(BUILD_SRC)
 	$(CC) -o allocate $(BUILD_SRC) $(CFLAGS)
 
 
-DEV_SRC = src/utils.o src/heap/min_heap.o src/heap/heap_main.o
+DEV_SRC = src/utils.o src/heap/min_heap.o src/heap/heap_test.o
 heap: $(DEV_SRC)
 	$(CC) -o heap_program $(DEV_SRC) $(CFLAGS)
 
