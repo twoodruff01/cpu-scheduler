@@ -36,15 +36,19 @@ min_heap *initialise_heap(int initial_size) {
 
 /*
 Add item to heap.
-Will increase sie of heap if needed.
+Will increase size of heap if needed.
 */
 void push(min_heap **heap, process *new_process) {
 
-    int priority_1 = new_process->remaining_run_time;
-    int priority_2 = new_process->pid;
+    // Avoid pointer bugs...
+    process *new_process_copy = malloc(sizeof(process));
+    assert(new_process_copy);
+    *new_process_copy = *new_process;
+
+    // Increase index of heap before we try putting anything in it.
+    int index = (*heap)->last_index + 1;
 
     // Check for end of array here and add more memory if needed.
-    int index = (*heap)->last_index + 1;
     if (index > (*heap)->array_size) {
         int new_array_size = index * 2;
         (*heap)->process_array = realloc((*heap)->process_array, sizeof(process) * new_array_size);
@@ -56,13 +60,12 @@ void push(min_heap **heap, process *new_process) {
     (*heap)->last_index = index;
     ((*heap)->process_array)[index] = new_process;
 
-    // Upheap: go up through the heap till you find a new spot for the last value.
+    // Upheap: go up through the heap till you find a new spot for the inserted process.
     while (index / 2 > 0) {
         
-        int parent_priority_1 = ((*heap)->process_array)[index / 2]->remaining_run_time;
-        int parent_priority_2 = ((*heap)->process_array)[index / 2]->pid;
+        process *parent_process = ((*heap)->process_array)[index / 2];
 
-        if (parent_priority_1 < priority_1 || (parent_priority_1 == priority_1 && parent_priority_2 < priority_2)) {  // What if PID's are equal too ???) {
+        if (less_than(parent_process, new_process_copy) == true) {
             break;
         } else {
             //swap parent with child
@@ -70,6 +73,7 @@ void push(min_heap **heap, process *new_process) {
             index /= 2;
         }
     }
+    free(new_process_copy);
 }
 
 

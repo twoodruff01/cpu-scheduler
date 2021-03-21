@@ -11,5 +11,6 @@ typedef struct {
 
 void swap_process(process *p1, process *p2);
 bool less_than(process *p1, process *p2);
+void print_process(process *p);
 
 #endif
