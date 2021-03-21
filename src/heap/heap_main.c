@@ -11,21 +11,39 @@ int main() {
     int *numbers = malloc(sizeof(int) * (ARRAY_SIZE + 1));
     assert(numbers);
 
-    fill_heap(numbers, ARRAY_SIZE);
-    print_heap_horizontally(numbers, ARRAY_SIZE);
+    // numbers[1] = 5;
+    // print_heap_horizontally(numbers, ARRAY_SIZE);
+    // up_heap(numbers, 1);
+    // print_heap_horizontally(numbers, ARRAY_SIZE);
 
-    heapify(numbers, ARRAY_SIZE);
-    print_heap_horizontally(numbers, ARRAY_SIZE);
-
-    printf("%d\n", delete_min(numbers, ARRAY_SIZE));
-    print_heap_horizontally(numbers, ARRAY_SIZE);
-    
+    keep_adding_to_heap(numbers, ARRAY_SIZE);
     heap_sort(numbers, ARRAY_SIZE);
     print_heap_horizontally(numbers, ARRAY_SIZE);
 
+    // fill_heap(numbers, ARRAY_SIZE);
+    // print_heap_horizontally(numbers, ARRAY_SIZE);
+
+    // heapify(numbers, ARRAY_SIZE);
+    // print_heap_horizontally(numbers, ARRAY_SIZE);
+
+    // printf("%d\n", delete_min(numbers, ARRAY_SIZE));
+    // print_heap_horizontally(numbers, ARRAY_SIZE);
+    
+    // heap_sort(numbers, ARRAY_SIZE);
+    // print_heap_horizontally(numbers, ARRAY_SIZE);
+
     free(numbers);
 
+    // ---------------------------------------------------------------
+
+    // process *thingo = malloc(sizeof(process));
+    // assert(thingo);
+    // thingo->remaining_run_time = 5;
+
     // min_heap *first_heap = initialise_heap(ARRAY_SIZE);
+    // push(&first_heap, thingo);
+
+    // printf("%d\n", (first_heap->process_array)[1]->remaining_run_time);
 
     return 0;
 }

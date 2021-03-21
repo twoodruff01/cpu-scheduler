@@ -26,8 +26,8 @@ min_heap *initialise_heap(int initial_size) {
     assert(new_heap);
 
     // This needs to be length+1 or you'll go past the end of the array without realising
-    new_heap->array = malloc(sizeof(void) * (initial_size + 1));  // ???
-    assert(new_heap->array);
+    new_heap->process_array = malloc(sizeof(process) * (initial_size + 1));  // ???
+    assert(new_heap->process_array);
     new_heap->array_size = initial_size;
     new_heap->length = 0;
     
@@ -52,33 +52,6 @@ void heapify(int array[], int length) {
 Fixes the heap, starting at the root.
 startIndex should usually be 1
 */
-// void down_heap2(min_heap *heap, int start_index) {
-//     int length = heap->length;
-
-
-//     int parent_index = start_index;
-//     int child_index;
-//     while (parent_index <= heap->length / 2) {
-
-//         child_index = parent_index*2;
-//         // Only compare the smaller child
-//         if (child_index < heap->length && array[child_index] > array[child_index + 1]) {  // Add second priority here. Could use a function pointer to a comparator ???
-//             child_index++;
-//         }
-//         // Stop when parent smaller then child
-//         if (array[parent_index] <= array[child_index]) {
-//             break;
-//         }
-//         swap(&array[parent_index], &array[child_index]);
-//         parent_index = child_index;
-//     }
-// }
-
-
-/*
-Fixes the heap, starting at the root.
-startIndex should usually be 1
-*/
 void down_heap(int array[], int start_index, int length) {
     int parent_index = start_index;
     int child_index;
@@ -86,7 +59,7 @@ void down_heap(int array[], int start_index, int length) {
 
         child_index = parent_index*2;
         // Only compare the smaller child
-        if (child_index < length && array[child_index] > array[child_index + 1]) {  // Add second priority here
+        if (child_index < length && array[child_index] > array[child_index + 1]) {  // Add second priority here. Could use a function pointer to a comparator ???
             child_index++;
         }
         // Stop when parent smaller then child
@@ -116,25 +89,14 @@ int delete_min(int array[], int last_value_index) {
 /*
 Fix heap after inserting new item at the bottom of the heap
 */
-void up_heap(int array[], int length) {
+void up_heap(int array[], int last_index) {
     // Insert at end of heap, then go up through the heap till you find its place
-    int last_value = array[length];
-    while (array[length / 2] <= last_value && length > 0) {
-        swap(&array[length], &array[length / 2]);
-        length /= 2;
+    int last_value = array[last_index];
+    while (last_index / 2 > 0 && array[last_index / 2] >= last_value) {
+        swap(&array[last_index], &array[last_index / 2]);
+        last_index /= 2;
     }
     // array[length] = lastValue;
-}
-
-
-/*
-Sorts in descending order
-*/
-void heap_sort(int array[], int length) {
-    while (length > 1) {
-        swap(&array[1], &array[length--]);
-        down_heap(array, 1, length);
-    }
 }
 
 
@@ -147,11 +109,40 @@ New
 
 
 /*
-New
+Add item to heap
 */
-// void push(min_heap *heap, void *thing) {
+void push(min_heap **heap, process *new_process) {
 
-// }
+    int priority_1 = new_process->remaining_run_time;
+    int priority_2 = new_process->pid;
+
+    // Insert at end of heap. Could check for end of array here and add more memory !!!
+    int index = (*heap)->length + 1;
+    (*heap)->length = index;
+    ((*heap)->process_array)[index] = new_process;
+
+    // Fix heap: go up through the heap till you find a new spot for the last value. (upheap).
+    while (index / 2 > 0) {
+        
+        int parent_priority_1 = (*heap)->process_array)[index / 2]->remaining_run_time;
+        int parent_priority_2 = (*heap)->process_array)[index / 2]->pid;
+
+        if (parent_priority_1 < priority_1 || (parent_priority_1 == priority_1 && parent_priority_2 < priority_2)) {  // What if PID's are equal too ???) {
+            break;
+        } else {
+            //swap parent with child
+            swap_process(&((*heap)->process_array)[index], &((*heap)->process_array)[index / 2]);
+            index /= 2;
+        }
+    }
+}
+
+
+void swap_process(process *p1, process *p2) {
+    process temp_process = *p1;
+    *p1 = *p2;
+    *p2 = temp_process;
+}
 
 
 /*
@@ -168,6 +159,17 @@ New
 // int is_empty(min_heap *heap) {
 
 // }
+
+
+/*
+Sorts in descending order
+*/
+void heap_sort(int array[], int length) {
+    while (length > 1) {
+        swap(&array[1], &array[length--]);
+        down_heap(array, 1, length);
+    }
+}
 
 
 // ---------------------------------Helper Functions-------------------------------------------------
@@ -189,6 +191,23 @@ void fill_heap(int array[], int length) {
      // Use <= because we're not using index 0
     for (i = 1; i <= length; i++) {
         array[i] = rand() % 200;
+    }
+}
+
+
+/*
+Use upheap repeatedly
+*/
+void keep_adding_to_heap(int array[], int length) {
+    srand(time(0));
+    int i;
+     // Use <= because we're not using index 0
+    for (i = 1; i <= length; i++) {
+        int new_value = rand() % 200;
+        printf("Adding value: %d\n", new_value);
+        array[i] = new_value;
+        up_heap(array, i);
+        print_heap_horizontally(array, length);  // print whole array every time whilst testing
     }
 }
 
