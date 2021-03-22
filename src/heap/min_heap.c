@@ -9,7 +9,6 @@ Basic guide to heaps:
 */
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <assert.h>
 #include <stdbool.h>
 #include "min_heap.h"
@@ -190,7 +189,7 @@ void heap_sort(min_heap **heap) {
 
 
 /*
-Turns a heap that has been sorted by heap_sort back into a heap.
+Turns a heap that has been sorted by heap_sort() back into a heap.
 The heap might not be exactly the same as the previous one, since children only have to
 be smaller than their parents and this could change between building the same heap.
 */
@@ -202,9 +201,6 @@ void heapify(min_heap **heap) {
         sub_heap_index--;
     }
 }
-
-
-// ---------------------------------Helper Functions-------------------------------------------------
 
 
 /*

@@ -1,7 +1,7 @@
 #ifndef MIN_HEAP
 #define MIN_HEAP
 
-#include "stdbool.h"
+#include <stdbool.h>
 #include "../utils.h"
 
 typedef struct {
