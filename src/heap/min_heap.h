@@ -18,13 +18,9 @@ void _down_heap(min_heap **heap, int start_index);
 process *peek(min_heap *heap);
 bool is_empty(min_heap *heap);
 void free_min_heap(min_heap *heap);
+void heap_sort(min_heap **heap);
+void heapify(min_heap **heap);
+
 void print_heap(min_heap *heap);
-
-int delete_min(int array[], int length);
-
-void down_heap(int array[], int start_Index, int length);
-void heapify(int array[], int length);
-void heap_sort(int array[], int length);
-void swap(int *v1, int *v2);
 
 #endif

@@ -101,19 +101,6 @@ process *pop(min_heap **heap) {
 
 
 /*
-Returns min node of heap
-Then fixes the heap
-*/
-int delete_min(int array[], int last_value_index) {
-    int min = array[1];
-
-    swap(&array[1], &array[last_value_index--]);
-
-    down_heap(array, 1, last_value_index);
-    return min;
-}
-
-/*
 Fixes the heap, starting at start_index.
 Should generally be called with start_index=1 if you haven't already
 called it on the heap recently.
@@ -188,62 +175,37 @@ void free_min_heap(min_heap *heap) {
 }
 
 
-// ---------------------------------Helper Functions-------------------------------------------------
-
-
 /*
-Fixes the heap, starting at the root.
-startIndex should usually be 1
+Sorts in descending order.
+Turns the heap into a glorified sorted list of processes.
 */
-void down_heap(int array[], int start_index, int length) {
-    int parent_index = start_index;
-    int child_index;
-    while (parent_index <= length / 2) {
-
-        child_index = parent_index*2;
-        // Only compare the smaller child
-        if (child_index < length && array[child_index] > array[child_index + 1]) {  // Add second priority here. Could use a function pointer to a comparator ???
-            child_index++;
-        }
-        // Stop when parent smaller then child
-        if (array[parent_index] <= array[child_index]) {
-            break;
-        }
-        swap(&array[parent_index], &array[child_index]);
-        parent_index = child_index;
+void heap_sort(min_heap **heap) {
+    int initial_length = (*heap)->last_index;
+    while ((*heap)->last_index > 1) {
+        swap_process(((*heap)->process_array)[1], ((*heap)->process_array)[(*heap)->last_index--]);
+        _down_heap(heap, 1);
     }
+    (*heap)->last_index = initial_length;
 }
 
 
 /*
-Takes an array after it's had items added to it, and turns it into a heap
+Turns a heap that has been sorted by heap_sort back into a heap.
+The heap might not be exactly the same as the previous one, since children only have to
+be smaller than their parents and this could change between building the same heap.
 */
-void heapify(int array[], int length) {
+void heapify(min_heap **heap) {
     // downHeap() for each sub-heap in the heap, starting from 1 level above leaves
-    int sub_heap_index = length / 2;
+    int sub_heap_index = (*heap)->last_index / 2;
     while (sub_heap_index >= 1) {
-        down_heap(array, sub_heap_index, length);
+        _down_heap(heap, sub_heap_index);
         sub_heap_index--;
     }
 }
 
 
-/*
-Sorts in descending order
-*/
-void heap_sort(int array[], int length) {
-    while (length > 1) {
-        swap(&array[1], &array[length--]);
-        down_heap(array, 1, length);
-    }
-}
+// ---------------------------------Helper Functions-------------------------------------------------
 
-
-void swap(int *v1, int *v2) {
-    int temp = *v1;
-    *v1 = *v2;
-    *v2 = temp;
-}
 
 /*
 Just for debugging
