@@ -18,7 +18,7 @@ Basic guide to heaps:
 
 /*
 Create new heap in memory.
-initial size is just the initial number of processes you think you might have.
+initial_size is the number of processes you want to budget for.
 This implementation will allocate more memory for new processes if needed.
 */
 min_heap *initialise_heap(int initial_size) {
@@ -37,10 +37,11 @@ min_heap *initialise_heap(int initial_size) {
 /*
 Add item to heap.
 Will increase size of heap if needed.
+I should probably pull an 'upheap()' function out of this...
 */
 void push(min_heap **heap, process *new_process) {
 
-    // Avoid pointer bugs...
+    // Avoid pointer bugs... Spent so long figuring this one out.
     process *new_process_copy = malloc(sizeof(process));
     assert(new_process_copy);
     *new_process_copy = *new_process;
@@ -48,12 +49,11 @@ void push(min_heap **heap, process *new_process) {
     // Increase index of heap before we try putting anything in it.
     int index = (*heap)->last_index + 1;
 
-    // Check for end of array here and add more memory if needed.
+    // Check if the spot for the new process is off the end of the array, and add more memory if needed.
     if (index > (*heap)->array_size) {
-        int new_array_size = index * 2;
-        (*heap)->process_array = realloc((*heap)->process_array, sizeof(process) * new_array_size);
+        (*heap)->array_size = index * 2;
+        (*heap)->process_array = realloc((*heap)->process_array, sizeof(process) * ((*heap)->array_size));
         assert((*heap)->process_array);
-        (*heap)->array_size = new_array_size;
     }
 
     // Insert at end of heap.
@@ -62,14 +62,12 @@ void push(min_heap **heap, process *new_process) {
 
     // Upheap: go up through the heap till you find a new spot for the inserted process.
     while (index / 2 > 0) {
-        
         process *parent_process = ((*heap)->process_array)[index / 2];
-
         if (less_than(parent_process, new_process_copy) == true) {
             break;
         } else {
-            //swap parent with child
-            swap_process((((*heap)->process_array)[index]), (((*heap)->process_array)[index / 2]));
+            //swap parent with child.
+            swap_process(((*heap)->process_array)[index], ((*heap)->process_array)[index / 2]);
             index /= 2;
         }
     }
@@ -78,68 +76,27 @@ void push(min_heap **heap, process *new_process) {
 
 
 /*
-New
+Returns a copy of the first process on the heap, then fixes the heap.
+This copy will need to be freed later.
+Doesn't check if heap is empty: call is_empty() separately to check.
+Same thing as delete_min()
 */
-// process *pop(min_heap **heap) {
-//     ;
-// }
+process *pop(min_heap **heap) {
+    process *min_process = malloc(sizeof(process));
+    assert(min_process);
+    *min_process = *(((*heap)->process_array)[1]);
 
+    // Put the last process at the front.
+    swap_process(((*heap)->process_array)[1], ((*heap)->process_array)[(*heap)->last_index]);
 
-/*
-Fixes the heap, starting at the root.
-startIndex should usually be 1
-*/
-// void down_heap1(min_heap **heap) {
-//     int heap_length = (*heap)->last_index;
+    // Free the old first process.
+    free(((*heap)->process_array)[(*heap)->last_index]);
 
-//     if (is_empty(*heap) == true) {
-//         return;
-//     }
+    // Fix heap.
+    (*heap)->last_index--;
+    _down_heap(heap, 1);
 
-//     int parent_index = 1;
-//     int child_index;
-//     while (parent_index <= heap_length / 2) {
-
-//         child_index = parent_index*2;
-
-//         /*
-//         Start at root
-//             find smaller child
-//                 ->remaining_time
-//                 ->pid
-//             if smaller child is smaller:
-//                 swap
-//             else:
-//                 break
-//         */
-
-
-
-
-
-
-//         // Only compare the smaller child (or child with smaller pid)
-//         if (child_index < heap_length && ((*heap)->process_array)[child_index] && array[child_index] > array[child_index + 1]) {  // Add second priority here. Could use a function pointer to a comparator ???
-//             child_index++;
-//         }
-//         // Stop when parent smaller then child
-//         if (array[parent_index] <= array[child_index]) {
-//             break;
-//         }
-//         swap(&array[parent_index], &array[child_index]);
-//         parent_index = child_index;
-//     }
-// }
-
-/*
-Return first process (or null if there aren't any).
-*/
-process *peek(min_heap *heap) {
-    if (is_empty(heap) != false) {
-        return (heap->process_array)[1];
-    } else {
-        return NULL;
-    }
+    return min_process;
 }
 
 
@@ -154,6 +111,56 @@ int delete_min(int array[], int last_value_index) {
 
     down_heap(array, 1, last_value_index);
     return min;
+}
+
+/*
+Fixes the heap, starting at start_index.
+Should generally be called with start_index=1 if you haven't already
+called it on the heap recently.
+*/
+void _down_heap(min_heap **heap, int start_index) {
+    int heap_length = (*heap)->last_index;
+
+    // Avoid bugs.
+    if (is_empty(*heap) == true) {
+        return;
+    }
+
+    int parent_index = start_index;
+    int child_index;
+    while (parent_index <= heap_length / 2) {
+
+        child_index = parent_index*2;
+
+        // Only compare the smaller child.
+        process *child_1 = ((*heap)->process_array)[child_index];
+        process *child_2 = ((*heap)->process_array)[child_index + 1];
+        if ((child_index < heap_length) && (child_2 != 0) && less_than(child_2, child_1) == true) {  // Bug if child_2 doesn't exist maybe ???
+            child_index++;
+        }
+
+        // Stop when parent smaller then child
+        if (less_than(((*heap)->process_array)[parent_index], ((*heap)->process_array)[child_index]) == true) {
+            break;
+        }
+        
+        swap_process(((*heap)->process_array)[parent_index], ((*heap)->process_array)[child_index]);
+        parent_index = child_index;
+    }
+}
+
+
+/*
+Return first process (or null if there aren't any).
+DON'T MODIFY THE RETURNED PROCESS.
+USE POP() AND THEN PUSH() IF YOU WANT TO MODIFY A PROCESS ON THE HEAP.
+*/
+process *peek(min_heap *heap) {
+    if (is_empty(heap) != true) {
+        return (heap->process_array)[1];
+    } else {
+        return NULL;
+    }
 }
 
 
@@ -173,7 +180,7 @@ bool is_empty(min_heap *heap) {
 Assumes that we're incrementing and decrementing heap->last_index properly.
 */
 void free_min_heap(min_heap *heap) {
-    for (int i = 1; i <= heap->last_index; i++) {
+    for (int i = 1; i <= heap->last_index; i++) {  // Need to test if this works with only one process on the heap !!!
         free((heap->process_array)[i]);
     }
     free(heap->process_array);
@@ -241,7 +248,7 @@ void swap(int *v1, int *v2) {
 /*
 Just for debugging
 */
-void print_process_heap_horizontally(min_heap *heap) {
+void print_heap(min_heap *heap) {
     int heap_length = heap->last_index;
     printf("[");
     int i = 1;

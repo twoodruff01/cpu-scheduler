@@ -4,7 +4,7 @@
 
 /*
 If you have a pointer already pointing at one of these processes, after
-this call, it will point to the other. Not ideal...
+this call, it will point to the other. Not ideal... Unavoidable ???
 */
 void swap_process(process *p1, process *p2) {
     process temp_process = *p1;
@@ -16,6 +16,7 @@ void swap_process(process *p1, process *p2) {
 /*
 Returns true if the first 'process' is less than the second.
 Bases this first on remaining_time, and second on PID.
+Assumes that PID's will never be equal. ???
 */
 bool less_than(process *p1, process *p2) {
     int p1_remaining_run_time = p1->remaining_run_time;
@@ -24,7 +25,7 @@ bool less_than(process *p1, process *p2) {
     int p2_remaining_run_time = p2->remaining_run_time;
     int p2_pid = p2->pid;
 
-    if (p1_remaining_run_time < p2_remaining_run_time || (p1_remaining_run_time == p2_remaining_run_time && p1_pid < p2_pid)) {  // What if PID's are equal too ???
+    if (p1_remaining_run_time < p2_remaining_run_time || (p1_remaining_run_time == p2_remaining_run_time && p1_pid < p2_pid)) {
         return true;
     } else {
         return false;
