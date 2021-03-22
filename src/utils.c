@@ -36,8 +36,13 @@ bool less_than(process *p1, process *p2) {
 }
 
 
-void print_process(process *p) {
-    printf("(%d,%d)\n", p->remaining_run_time, p->pid);
+void print_process_running(process *p, int current_time, int cpu_id) {
+    printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n", current_time, p->pid, p->remaining_run_time, cpu_id);
+}
+
+
+void print_process_finished(process *p, int current_time, int processes_remaining) {
+    printf("%d,FINISHED,pid=%d,proc_remaining=%d\n", current_time, p->pid, processes_remaining);
 }
 
 
@@ -65,4 +70,12 @@ process *process_from_row(int arrival_time, int pid, int run_time, char parallel
     new_process->remaining_run_time = run_time;
 
     return new_process;
+}
+
+
+/*
+Just for debugging.
+*/
+void print_process(process *p) {
+    printf("(%d,%d)\n", p->remaining_run_time, p->pid);
 }
