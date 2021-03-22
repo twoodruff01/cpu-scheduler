@@ -1,5 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
 #include "utils.h"
 
 
@@ -35,5 +37,32 @@ bool less_than(process *p1, process *p2) {
 
 
 void print_process(process *p) {
-    printf("(%d,%d)", p->remaining_run_time, p->pid);
+    printf("(%d,%d)\n", p->remaining_run_time, p->pid);
+}
+
+
+/*
+Creates a process using the given values.
+Note that parallelisable is converted to boolean here.
+*/
+process *process_from_row(int arrival_time, int pid, int run_time, char parallelisable_char) {
+    process *new_process = malloc(sizeof(process));
+    assert(new_process);
+    new_process->arrival_time = arrival_time;
+    new_process->pid = pid;
+    new_process->run_time = run_time;
+
+    // Boolean is much easier to work with:
+    if (parallelisable_char == 'n') {
+        new_process->is_parallelisable = false;
+    } else if (parallelisable_char == 'p') {
+        new_process->is_parallelisable = true;
+    } else {
+        printf("Strange parallelisable input given in file: %c\n", parallelisable_char);
+    }
+
+    // Process hasn't been given any CPU time yet:
+    new_process->remaining_run_time = run_time;
+
+    return new_process;
 }
