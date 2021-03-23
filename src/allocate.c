@@ -44,7 +44,7 @@ void parse_cli(int argc, char **argv, char **file_flag, int processor_flag) {
 
 
 /*
-Reads every line in the given file into a an array of processes.
+Reads every line in the given file into an array of processes.
 Does absolutely no format checking.
 The returned array should be in the same order as the file was.
 */
@@ -85,6 +85,17 @@ process **read_input_file(char *filename) {
 }
 
 
+void run_processor(min_heap **processor, int time) {
+    
+    peek(*processor)->remaining_run_time--;
+    if (peek(*processor)->remaining_run_time == 0) {
+        process *finished_process = pop(processor);
+        print_process_finished(finished_process, time, (*processor)->last_index);
+        free(finished_process);
+    }
+}
+
+
 int main(int argc, char **argv) {
 
     char *input_file_name = NULL;
@@ -97,14 +108,35 @@ int main(int argc, char **argv) {
     process **all_processes = read_input_file(input_file_name);
 
     // Actual Algorithm
-    int time = 0;
     min_heap *processor = initialise_heap(INITIAL_PROCESSES_BUDGET);
+    process *next_process;
+    int time = 0;
+    int process_index = 0;
+    while (true) {
+        next_process = all_processes[process_index];
 
+        if (next_process != NULL && next_process->arrival_time == time) {
+            // New process has arrived, just add it to processor
+            push(&processor, next_process);
+            process_index++;
 
+        } else if (next_process == NULL) {
+            // No more processes left to add. Run the rest that are already on the processor.
+            while (is_empty(processor) != true) {
+                time++;
+                run_processor(&processor, time);
+            }
+            break;
 
+        }
 
-
-    
+        // Actually use CPU time
+        time++;
+        if (is_empty(processor) != true) {
+            run_processor(&processor, time);
+        }
+        
+    }
     free_min_heap(processor);
     return 0;
 }
