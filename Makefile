@@ -7,7 +7,7 @@ CC=gcc
 CFLAGS = -Wall -Wextra -W -Wshadow -O3 -g3
 
 BUILD_SRC = src/utils.o src/heap/min_heap.o src/allocate.o
-all: $(BUILD_SRC)
+-B: $(BUILD_SRC)
 	$(CC) -o allocate $(BUILD_SRC) $(CFLAGS)
 
 
