@@ -92,8 +92,6 @@ int main(int argc, char **argv) {
     int number_of_processors = 0;
     parse_cli(argc, argv, &input_file_name, &number_of_processors);
 
-    printf("Number of processors: %d\n", number_of_processors);
-
     /*
     -----------------------Actual Algorithm-----------------------
     */
@@ -109,10 +107,24 @@ int main(int argc, char **argv) {
         process *next_process = all_processes[i + 1];
 
         if (current_process->is_parallelisable != true) {
-
+            // Just add process to one cpu.
         } else {
-            // Split process into sub-processes and add them to cpu's
+            // Split process into sub-processes and add them to cpu's.
+            // Also keep track of them somehow.
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -121,8 +133,19 @@ int main(int argc, char **argv) {
     
 
 
-    
+    /*
+    Plan for freeing:
+    - When a process finishes: free it.
+    - At the end, this should mean that all I have to do is:
+        free_cores(cores)
+        free(all_processes)
+    */
     free_cores(cores);
+    i = 0;
+    while (all_processes[i] != NULL) {
+        free(all_processes[i]);
+        i++;
+    }
     free(all_processes);
     return 0;
 }
@@ -146,4 +169,19 @@ int main(int argc, char **argv) {
 Turnaround time 62
 Time overhead 2.93 1.9
 Makespan 120
+*/
+
+/*
+0 1 100 n
+0 2 90 n
+0 3 20 p
+0 4 20 p
+10 241 50 n
+11 4222 90 n
+12 413 100 n
+13 414 100 n
+20 2541 50 p
+21 42522 90 n
+29 4163 100 n
+63 4142 100 n
 */

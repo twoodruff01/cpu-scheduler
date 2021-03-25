@@ -11,6 +11,12 @@ mulitcore is just a min_heap of cpu's, sorted on:
 #include "multicore.h"
 #include "cpu.h"
 
+/*
+TODO:
+- Create all the CPU's and add them to the heap when you initialise it. (initialise_cores())
+- Modify this so that when you add a process to one of the CPU's, the heap fixes itself and puts the right CPU at the front. (push())
+- Find some way of decrementing CPU processes.
+*/
 
 /*
 Create new cores in memory.
@@ -109,7 +115,7 @@ bool multicore_is_empty(multicore *cores) {
 Assumes that we're incrementing and decrementing heap->last_index properly.
 */
 void free_cores(multicore *cores) {
-    for (int i = 1; i <= cores->last_index; i++) {  // Need to test if this works with only one process on the heap !!!
+    for (int i = 1; i <= cores->last_index; i++) {
         free_cpu((cores->cpu_array)[i]);
     }
     free(cores->cpu_array);
@@ -168,7 +174,7 @@ void _multicore_downheap(multicore **cores, int start_index) {
         // Only compare the smaller child.
         cpu *child_1 = ((*cores)->cpu_array)[child_index];
         cpu *child_2 = ((*cores)->cpu_array)[child_index + 1];
-        if ((child_index < heap_length) && (child_2 != 0) && cpu_less_than(child_2, child_1) == true) {  // Bug if child_2 doesn't exist maybe ???
+        if ((child_index < heap_length) && (child_2 != 0) && cpu_less_than(child_2, child_1) == true) {
             child_index++;
         }
 
@@ -177,7 +183,7 @@ void _multicore_downheap(multicore **cores, int start_index) {
             break;
         }
         
-        swap_cpu_pointers(&(((*cores)->cpu_array)[parent_index]), &(((*cores)->cpu_array)[child_index]));  // check this !!!
+        swap_cpu_pointers(&(((*cores)->cpu_array)[parent_index]), &(((*cores)->cpu_array)[child_index]));
         parent_index = child_index;
     }
 }

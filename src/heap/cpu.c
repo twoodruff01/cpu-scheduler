@@ -26,7 +26,7 @@ cpu *initialise_cpu(int initial_size, int id) {
     assert(new_cpu);
     
     // This needs to be length+1 or you'll go past the end of the array without realising
-    new_cpu->process_array = malloc(sizeof(process) * (initial_size + 1));  // ??? process*
+    new_cpu->process_array = malloc(sizeof(process) * (initial_size + 1));  // !!! process*
     assert(new_cpu->process_array);
     new_cpu->array_size = initial_size;
     new_cpu->last_index = 0;
@@ -87,7 +87,7 @@ process *cpu_pop(cpu **current_cpu) {
     *min_process = *(((*current_cpu)->process_array)[1]);
 
     // Put the last process at the front.
-    swap_process_pointers(&(((*current_cpu)->process_array)[1]), &(((*current_cpu)->process_array)[(*current_cpu)->last_index]));  // check this !!!
+    swap_process_pointers(&(((*current_cpu)->process_array)[1]), &(((*current_cpu)->process_array)[(*current_cpu)->last_index]));
 
     // Free the old first process.
     free(((*current_cpu)->process_array)[(*current_cpu)->last_index]);
@@ -127,10 +127,12 @@ bool cpu_is_empty(cpu *current_cpu) {
 
 /*
 Assumes that we're incrementing and decrementing heap->last_index properly.
+Doesn't free processes on the cpu. If there are processes on it, you shouldn't be freeing it.
 */
 void free_cpu(cpu *current_cpu) {
-    for (int i = 1; i <= current_cpu->last_index; i++) {  // Need to test if this works with only one process on the heap !!!
-        free((current_cpu->process_array)[i]);
+
+    if (cpu_is_empty(current_cpu) != true) {
+        printf("\n\n\nYou're freeing a CPU with processes still on it.\n\n\n");
     }
     free(current_cpu->process_array);
     free(current_cpu);
@@ -144,7 +146,7 @@ Turns the heap into a glorified sorted list of processes.
 void cpu_sort(cpu **current_cpu) {
     int initial_length = (*current_cpu)->last_index;
     while ((*current_cpu)->last_index > 1) {
-        swap_process_pointers(&(((*current_cpu)->process_array)[1]), &(((*current_cpu)->process_array)[(*current_cpu)->last_index--]));  // check this !!!
+        swap_process_pointers(&(((*current_cpu)->process_array)[1]), &(((*current_cpu)->process_array)[(*current_cpu)->last_index--]));
         _cpu_downheap(current_cpu, 1);
     }
     (*current_cpu)->last_index = initial_length;
@@ -226,7 +228,7 @@ void _cpu_downheap(cpu **current_cpu, int start_index) {
         // Only compare the smaller child.
         process *child_1 = ((*current_cpu)->process_array)[child_index];
         process *child_2 = ((*current_cpu)->process_array)[child_index + 1];
-        if ((child_index < heap_length) && (child_2 != 0) && process_less_than(child_2, child_1) == true) {  // Bug if child_2 doesn't exist maybe ???
+        if ((child_index < heap_length) && (child_2 != 0) && process_less_than(child_2, child_1) == true) {
             child_index++;
         }
 
@@ -235,7 +237,7 @@ void _cpu_downheap(cpu **current_cpu, int start_index) {
             break;
         }
         
-        swap_process_pointers(&(((*current_cpu)->process_array)[parent_index]), &(((*current_cpu)->process_array)[child_index]));  // check this !!!
+        swap_process_pointers(&(((*current_cpu)->process_array)[parent_index]), &(((*current_cpu)->process_array)[child_index]));
         parent_index = child_index;
     }
 }
