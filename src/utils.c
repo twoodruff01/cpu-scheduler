@@ -28,34 +28,45 @@ void swap_process_pointers(process **p1, process **p2) {
 
 /*
 Returns true if the first 'process' is less than the second.
-Bases this first on remaining_time, and second on PID.
+Bases this 
+- first on remaining_time
+- second on PID
 Assumes that PID's will never be equal.
 */
 bool process_less_than(process *p1, process *p2) {
-
-    // TODO: use string comparison for pid
-    int p1_remaining_run_time = p1->remaining_run_time;
-    int p1_pid = atoi(p1->pid);
-
-    int p2_remaining_run_time = p2->remaining_run_time;
-    int p2_pid = atoi(p2->pid);
-
-    if (p1_remaining_run_time < p2_remaining_run_time || (p1_remaining_run_time == p2_remaining_run_time && p1_pid < p2_pid)) {
-        return true;
-    } else {
-        return false;
-    }
-    return true;
+    return (p1->remaining_run_time < p2->remaining_run_time || (p1->remaining_run_time == p2->remaining_run_time && pid_less_than(p1->pid, p2->pid)));
 }
 
 
-void print_process_running(process *p, int current_time, int cpu_id) {
-    printf("%d,RUNNING,pid=%s,remaining_time=%d,cpu=%d\n", current_time, p->pid, p->remaining_run_time, cpu_id);
-}
+/*
+Account for the fact that we have two different types of pid's
+PID can either be:
+- 4.523 (float as a string)
+- 3 (integer as a string)
+Assume that pid's will never be the same.
+*/
+bool pid_less_than(char *pid1, char *pid2) {
 
+    // Parse strings and split into two arrays of two.
+    int *first_pid = _string_to_int_array(pid1);
+	int *second_pid = _string_to_int_array(pid2);
 
-void print_process_finished(process *p, int current_time, int processes_remaining) {
-    printf("%d,FINISHED,pid=%s,proc_remaining=%d\n", current_time, p->pid, processes_remaining);
+	bool result;
+	if (first_pid[0] < second_pid[0]) {
+		// Just compare first values
+		result = true;
+	} else if (first_pid[0] == second_pid[0]) {
+		// Since there's no duplicate pid's, the only time we need to look
+		// at the second number is if we're comparing sub-processes - which
+		// should have decimal values (and not be equal).
+		result = (first_pid[1] < second_pid[1]);
+	} else {
+		result = false;
+	}
+
+	free(first_pid);
+	free(second_pid);
+	return result;
 }
 
 
@@ -86,6 +97,24 @@ process *process_from_row(int arrival_time, char *pid, int run_time, char parall
 }
 
 
+void print_process_running(process *p, int current_time, int cpu_id) {
+    printf("%d,RUNNING,pid=%s,remaining_time=%d,cpu=%d\n", current_time, p->pid, p->remaining_run_time, cpu_id);
+}
+
+
+void print_process_finished(process *p, int current_time, int processes_remaining) {
+    printf("%d,FINISHED,pid=%s,proc_remaining=%d\n", current_time, p->pid, processes_remaining);
+}
+
+
+/*
+Just for debugging.
+*/
+void print_process(process *p) {
+    printf("(%d,%s)\n", p->remaining_run_time, p->pid);
+}
+
+
 /*
 The number of sub-processes should be the greater of K processors and x execution time
 */
@@ -99,8 +128,32 @@ int max(int a, int b) {
 
 
 /*
-Just for debugging.
+Takes a string representation of numbers as input.
+Like this:
+- "5"
+- "23.546"
+Returns an array of two numbers.
+If the second number is -1, then the string was just an int.
+Needs to be freed.
 */
-void print_process(process *p) {
-    printf("(%d,%s)\n", p->remaining_run_time, p->pid);
+int *_string_to_int_array(char *input) {
+	char *input_copy = malloc(sizeof(char) * 30);
+	assert(input_copy);
+	strcpy(input_copy, input);
+
+	int *values = malloc(sizeof(int) * 2);
+	assert(values);
+
+	char *next_part = strtok(input_copy, ".");
+	values[0] = atoi(next_part);
+
+	next_part = strtok(NULL, ".");
+	if (next_part != NULL) {
+		values[1] = atoi(next_part);
+	} else {
+		values[1] = -1;
+	}
+
+	free(input_copy);
+	return values;
 }
