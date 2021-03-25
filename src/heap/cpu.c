@@ -202,9 +202,9 @@ void print_cpu(cpu *current_cpu) {
         printf("CPU:%d[", current_cpu->cpu_id);
         int i = 1;
         for (i = 1; i < heap_length; i++) {
-            printf("(%d,%d)", (current_cpu->process_array)[i]->remaining_run_time, (current_cpu->process_array)[i]->pid);
+            printf("(%d,%s)", (current_cpu->process_array)[i]->remaining_run_time, (current_cpu->process_array)[i]->pid);
         }
-        printf("(%d,%d)]\n", (current_cpu->process_array)[i]->remaining_run_time, (current_cpu->process_array)[i]->pid);
+        printf("(%d,%s)]\n", (current_cpu->process_array)[i]->remaining_run_time, (current_cpu->process_array)[i]->pid);
     } else {
         printf("CPU:%d[EMPTY]\n", current_cpu->cpu_id);
     }

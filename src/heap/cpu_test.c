@@ -19,9 +19,9 @@ int main() {
         process *thingo = malloc(sizeof(process));
         assert(thingo);
         thingo->remaining_run_time = rand() % 10;
-        thingo->pid = rand() % 200;
+        sprintf(thingo->pid,"%d", rand() % 200);
 
-        printf("Adding process: run_time=%d pid=%d\n", thingo->remaining_run_time, thingo->pid);
+        printf("Adding process: run_time=%d pid=%s\n", thingo->remaining_run_time, thingo->pid);
         cpu_push(&first_heap, thingo);
         
         print_cpu(first_heap);

@@ -58,11 +58,11 @@ process **read_input_file(char *filename) {
     int max_length = INITIAL_PROCESSES_BUDGET;
 
     int arrival_time;
-    int pid;
+    char pid[PID_MAX_LENGTH];  // if pid in file is longer than this, the while loop below won't even run once.
     int run_time;
     char parallelisable_char;
-    while (fscanf(input_process_file, "%d %d %d %c", &arrival_time, &pid, &run_time, &parallelisable_char) == 4) {
-        // printf("%d %d %d %c\n", arrival_time, pid, run_time, parallelisable_char);
+    while (fscanf(input_process_file, "%d %s %d %c", &arrival_time, pid, &run_time, &parallelisable_char) == 4) {
+        // printf("%d %s %d %c\n", arrival_time, pid, run_time, parallelisable_char);
         process *new_process = process_from_row(arrival_time, pid, run_time, parallelisable_char);
         
         // Allocate more memory if needed.
@@ -92,13 +92,13 @@ int main(int argc, char **argv) {
     /*
     -----------------------Actual Algorithm-----------------------
     */
-    int time = 0;
-    process **parallelized;
+    // int time = 0;
+    // process **parallelized;
     process **all_processes = read_input_file(input_file_name);
     multicore *cores = initialise_cores(number_of_processors);
 
     int i = 0;
-    while (true) { // TODO: change to true.
+    while (true) {
 
         process *current_process = all_processes[i];
         process *next_process = all_processes[i + 1];
@@ -112,6 +112,7 @@ int main(int argc, char **argv) {
         } else {
             // Split process into sub-processes and add them to cpu's.
             // Also keep track of them somehow.
+            // int sub_processes = max(number_of_processors, current_process->run_time);
         }
 
 
@@ -119,13 +120,6 @@ int main(int argc, char **argv) {
 
 
         print_multicore(cores);
-
-
-
-
-
-
-
 
 
 
