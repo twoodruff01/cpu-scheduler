@@ -7,9 +7,6 @@
 #include "heap/cpu.h"
 #include "utils.h"
 
-#define MAX_PROCESSORS 1024
-#define INITIAL_PROCESSES_BUDGET 100
-
 
 /*
 Parses and does value checking.
@@ -101,13 +98,17 @@ int main(int argc, char **argv) {
     multicore *cores = initialise_cores(number_of_processors);
 
     int i = 0;
-    while (i < 1) { // TODO: change to true.
+    while (true) { // TODO: change to true.
 
         process *current_process = all_processes[i];
         process *next_process = all_processes[i + 1];
 
         if (current_process->is_parallelisable != true) {
             // Just add process to one cpu.
+            multicore_add_process(&cores, current_process);
+            printf("------ADDING:");
+            print_process(current_process);
+
         } else {
             // Split process into sub-processes and add them to cpu's.
             // Also keep track of them somehow.
@@ -117,6 +118,7 @@ int main(int argc, char **argv) {
 
 
 
+        print_multicore(cores);
 
 
 
@@ -128,11 +130,13 @@ int main(int argc, char **argv) {
 
 
 
+
+        if (next_process == NULL) {
+            break;
+        }
         i++;
     }
     
-
-
     /*
     Plan for freeing:
     - When a process finishes: free it.
@@ -171,7 +175,9 @@ Time overhead 2.93 1.9
 Makespan 120
 */
 
-/*
+/* 
+./allocate -p 5 -f testcases/task7/test_chal_p5_n.txt
+
 0 1 100 n
 0 2 90 n
 0 3 20 p

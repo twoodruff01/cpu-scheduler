@@ -1,5 +1,5 @@
 /*
-mulitcore is just a min_heap of cpu's, sorted on:
+multicore is just a min_heap of cpu's, sorted on:
 - total remaining_run_time
 - cpu id
 */
@@ -13,24 +13,30 @@ mulitcore is just a min_heap of cpu's, sorted on:
 
 /*
 TODO:
-- Create all the CPU's and add them to the heap when you initialise it. (initialise_cores())
-- Modify this so that when you add a process to one of the CPU's, the heap fixes itself and puts the right CPU at the front. (push())
 - Find some way of decrementing CPU processes.
 */
 
 /*
 Create new cores in memory.
-initial_size is the number of cpu's you want to budget for.
+cpu_quantity is the number of cpu's to use.
+cpu_quantity should be > 0
 */
-multicore *initialise_cores(int initial_size) {
+multicore *initialise_cores(int cpu_quantity) {
     multicore *new_multicore = malloc(sizeof(multicore));
     assert(new_multicore);
+    new_multicore->array_size = cpu_quantity;
+    new_multicore->last_index = 0;
     
     // This needs to be length+1 or you'll go past the end of the array without realising
-    new_multicore->cpu_array = malloc(sizeof(cpu) * (initial_size + 1));
+    new_multicore->cpu_array = malloc(sizeof(cpu) * (cpu_quantity + 1));
     assert(new_multicore->cpu_array);
-    new_multicore->array_size = initial_size;
-    new_multicore->last_index = 0;
+
+    // Create all the cpu's and add them to the heap.
+    for (int i = 0; i < cpu_quantity; i++) {
+        cpu *new_cpu = initialise_cpu(INITIAL_PROCESSES_BUDGET, i);
+        multicore_push(&new_multicore, new_cpu);
+    }
+
     return new_multicore;
 }
 
@@ -62,40 +68,16 @@ void multicore_push(multicore **cores, cpu *new_cpu) {
 
 
 /*
-Returns a copy of the first cpu on the heap, then fixes the heap.
-This copy will need to be freed later.
-Doesn't check if heap is empty: call is_empty() separately to check.
-Same thing as delete_min()
+Adds process to the highest priotity cpu on the multicore, then fixes the heap
 */
-cpu *multicore_pop(multicore **cores) {
-    cpu *min_cpu = malloc(sizeof(cpu));
-    assert(min_cpu);
-    *min_cpu = *(((*cores)->cpu_array)[1]);
+void multicore_add_process(multicore **cores, process *new_process) {
+    cpu *first_cpu = ((*cores)->cpu_array)[1];
+    assert(first_cpu);
+    cpu_push(&first_cpu, new_process);
 
-    // Put the last cpu at the front.
-    swap_cpu_pointers(&(((*cores)->cpu_array)[1]), &(((*cores)->cpu_array)[(*cores)->last_index]));  // check this !!!
-
-    // Free the old first process.
-    free(((*cores)->cpu_array)[(*cores)->last_index]);
-
-    // Fix heap.
-    (*cores)->last_index--;
+    // Put the last cpu at the front and fix the heap.
+    swap_cpu_pointers(&(((*cores)->cpu_array)[1]), &(((*cores)->cpu_array)[(*cores)->last_index]));
     _multicore_downheap(cores, 1);
-
-    return min_cpu;
-}
-
-
-/*
-Return first process (or null if there aren't any).
-BE CAREFUL MODIFYING THE RETURNED PROCESS.
-*/
-cpu *multicore_peek(multicore *cores) {
-    if (multicore_is_empty(cores) != true) {
-        return (cores->cpu_array)[1];
-    } else {
-        return NULL;
-    }
 }
 
 
@@ -185,5 +167,17 @@ void _multicore_downheap(multicore **cores, int start_index) {
         
         swap_cpu_pointers(&(((*cores)->cpu_array)[parent_index]), &(((*cores)->cpu_array)[child_index]));
         parent_index = child_index;
+    }
+}
+
+
+/*
+Just for debugging
+*/
+void print_multicore(multicore *cores) {
+    if (multicore_is_empty(cores) != true) {
+        for (int i = 1; i <= cores->last_index; i++) {
+            print_cpu(cores->cpu_array[i]);
+        }
     }
 }

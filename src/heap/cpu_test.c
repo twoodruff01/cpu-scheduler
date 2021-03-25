@@ -59,6 +59,9 @@ int main() {
     printf("second_heap sorted: ");
     print_cpu(second_heap);
 
+    while (cpu_is_empty(second_heap) != true) {
+        free(cpu_pop(&second_heap));
+    }
     free_cpu(first_heap);
     free_cpu(second_heap);
 

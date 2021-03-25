@@ -1,6 +1,9 @@
 #ifndef UTILS
 #define UTILS
 
+#define MAX_PROCESSORS 1024
+#define INITIAL_PROCESSES_BUDGET 100
+
 typedef struct {
     int arrival_time;
     int pid;  // priority 2
