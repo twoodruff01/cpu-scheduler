@@ -15,7 +15,7 @@
 Parses and does value checking.
 For processor_flag, atoi will try it's best to deal with non-integer input.
 */
-void parse_cli(int argc, char **argv, char **file_flag, int processor_flag) {
+void parse_cli(int argc, char **argv, char **file_flag, int *processor_flag) {
     int option;
     while ((option = getopt(argc, argv, "f:p:c")) != -1) {
         switch (option) {
@@ -23,7 +23,7 @@ void parse_cli(int argc, char **argv, char **file_flag, int processor_flag) {
                 *file_flag = optarg;
                 break;
             case 'p':
-                processor_flag = atoi(optarg);
+                *processor_flag = atoi(optarg);
                 break;
             case 'c':
                 // TODO: implement section 4 scheduler.
@@ -37,7 +37,7 @@ void parse_cli(int argc, char **argv, char **file_flag, int processor_flag) {
     // printf("file_flag=%s, processor_flag=%d\n", *file_flag, processor_flag);
     
     // Value checking.
-    if (*file_flag == NULL || processor_flag == 0 || processor_flag > MAX_PROCESSORS) {
+    if (*file_flag == NULL || *processor_flag == 0 || *processor_flag > MAX_PROCESSORS) {
         printf("invalid file_flag or processor_flag given\n");
         exit(1);
     }
@@ -86,53 +86,42 @@ process **read_input_file(char *filename) {
 }
 
 
-// void run_processor(cpu **processor, int time) {
-    
-//     peek(*processor)->remaining_run_time--;
-//     if (peek(*processor)->remaining_run_time == 0) {
-//         process *finished_process = pop(processor);
-//         print_process_finished(finished_process, time, (*processor)->last_index);
-//         free(finished_process);
-//     }
-// }
-
-
 int main(int argc, char **argv) {
 
     char *input_file_name = NULL;
     int number_of_processors = 0;
+    parse_cli(argc, argv, &input_file_name, &number_of_processors);
 
-    // Parse and check command-line arguments.
-    parse_cli(argc, argv, &input_file_name, number_of_processors);
+    printf("Number of processors: %d\n", number_of_processors);
 
-    // Read input file into an array of processes. (Watch out for weird pointer problems caused by this array)
+    /*
+    -----------------------Actual Algorithm-----------------------
+    */
+    int time = 0;
+    process **parallelized;
     process **all_processes = read_input_file(input_file_name);
-
-
-
-
-
-    
-    cpu *processor = initialise_cpu(INITIAL_PROCESSES_BUDGET, 0);
-    int i = 0;
-    while (all_processes[i] != NULL) {
-        cpu_push(&processor, all_processes[i]);
-        i++;
-    }
-    print_cpu(processor);
-
-    // multicore development -----------------------------------------------
-    // We only need one of these for this program.
     multicore *cores = initialise_cores(number_of_processors);
 
-    multicore_push(&cores, processor);
+    int i = 0;
+    while (i < 1) { // TODO: change to true.
+
+        process *current_process = all_processes[i];
+        process *next_process = all_processes[i + 1];
+
+        if (current_process->is_parallelisable != true) {
+
+        } else {
+            // Split process into sub-processes and add them to cpu's
+        }
 
 
 
+        i++;
+    }
     
 
 
-    // free_cpu(processor);
+    
     free_cores(cores);
     free(all_processes);
     return 0;
