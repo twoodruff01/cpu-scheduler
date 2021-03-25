@@ -1,3 +1,6 @@
+/*
+Only concerned with functions for processes.
+*/
 #include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
@@ -6,8 +9,7 @@
 
 
 /*
-If you have a pointer already pointing at one of these processes, after
-this call, it will point to the other. Not ideal... Unavoidable ???
+Moves the actual process location in memory.
 */
 void swap_process(process *p1, process *p2) {
     process temp_process = *p1;
@@ -16,12 +18,19 @@ void swap_process(process *p1, process *p2) {
 }
 
 
+void swap_process_pointers(process **p1, process **p2) {
+    process *temp_process = *p1;
+    *p1 = *p2;
+    *p2 = temp_process;
+}
+
+
 /*
 Returns true if the first 'process' is less than the second.
 Bases this first on remaining_time, and second on PID.
-Assumes that PID's will never be equal. ???
+Assumes that PID's will never be equal.
 */
-bool less_than(process *p1, process *p2) {
+bool process_less_than(process *p1, process *p2) {
     int p1_remaining_run_time = p1->remaining_run_time;
     int p1_pid = p1->pid;
 

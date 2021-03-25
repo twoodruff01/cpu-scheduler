@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
-#include "heap/min_heap.h"
+#include "heap/multicore.h"
+#include "heap/cpu.h"
 #include "utils.h"
 
 #define MAX_PROCESSORS 1024
@@ -85,15 +86,15 @@ process **read_input_file(char *filename) {
 }
 
 
-void run_processor(min_heap **processor, int time) {
+// void run_processor(cpu **processor, int time) {
     
-    peek(*processor)->remaining_run_time--;
-    if (peek(*processor)->remaining_run_time == 0) {
-        process *finished_process = pop(processor);
-        print_process_finished(finished_process, time, (*processor)->last_index);
-        free(finished_process);
-    }
-}
+//     peek(*processor)->remaining_run_time--;
+//     if (peek(*processor)->remaining_run_time == 0) {
+//         process *finished_process = pop(processor);
+//         print_process_finished(finished_process, time, (*processor)->last_index);
+//         free(finished_process);
+//     }
+// }
 
 
 int main(int argc, char **argv) {
@@ -107,37 +108,33 @@ int main(int argc, char **argv) {
     // Read input file into an array of processes. (Watch out for weird pointer problems caused by this array)
     process **all_processes = read_input_file(input_file_name);
 
-    // Actual Algorithm
-    min_heap *processor = initialise_heap(INITIAL_PROCESSES_BUDGET);
-    process *next_process;
-    int time = 0;
-    int process_index = 0;
-    while (true) {
-        next_process = all_processes[process_index];
 
-        if (next_process != NULL && next_process->arrival_time == time) {
-            // New process has arrived, just add it to processor
-            push(&processor, next_process);
-            process_index++;
 
-        } else if (next_process == NULL) {
-            // No more processes left to add. Run the rest that are already on the processor.
-            while (is_empty(processor) != true) {
-                time++;
-                run_processor(&processor, time);
-            }
-            break;
 
-        }
 
-        // Actually use CPU time
-        time++;
-        if (is_empty(processor) != true) {
-            run_processor(&processor, time);
-        }
-        
+    
+    cpu *processor = initialise_cpu(INITIAL_PROCESSES_BUDGET, 0);
+    int i = 0;
+    while (all_processes[i] != NULL) {
+        cpu_push(&processor, all_processes[i]);
+        i++;
     }
-    free_min_heap(processor);
+    print_cpu(processor);
+
+    // multicore development -----------------------------------------------
+    // We only need one of these for this program.
+    multicore *cores = initialise_cores(number_of_processors);
+
+    multicore_push(&cores, processor);
+
+
+
+    
+
+
+    // free_cpu(processor);
+    free_cores(cores);
+    free(all_processes);
     return 0;
 }
 

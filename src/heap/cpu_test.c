@@ -3,14 +3,15 @@
 #include <assert.h>
 #include <time.h>
 #include <stdbool.h>
-#include "min_heap.h"
+
+#include "cpu.h"
 
 #define ARRAY_SIZE 17
 
 int main() {
     srand(time(0));
     
-    min_heap *first_heap = initialise_heap(ARRAY_SIZE);
+    cpu *first_heap = initialise_cpu(ARRAY_SIZE, 0);
 
      // Use <= because we're not using index 0
     for (int i = 1; i <= ARRAY_SIZE; i++) {
@@ -21,9 +22,9 @@ int main() {
         thingo->pid = rand() % 200;
 
         printf("Adding process: run_time=%d pid=%d\n", thingo->remaining_run_time, thingo->pid);
-        push(&first_heap, thingo);
+        cpu_push(&first_heap, thingo);
         
-        print_heap(first_heap);
+        print_cpu(first_heap);
     }
 
     // printf("Testing pop\n");
@@ -37,29 +38,29 @@ int main() {
     //     }
     // }
 
-    heap_sort(&first_heap);
+    cpu_sort(&first_heap);
     printf("first_heap sorted: ");
-    print_heap(first_heap);
+    print_cpu(first_heap);
 
-    heapify(&first_heap);
+    cpu_heapify(&first_heap);
     printf("first_heap heapified: ");
-    print_heap(first_heap);
+    print_cpu(first_heap);
     printf("End of first_heap stuff\n");
 
-    min_heap *second_heap = initialise_heap(ARRAY_SIZE);
-    while (is_empty(first_heap) != true) {
-        push(&second_heap, pop(&first_heap));
+    cpu *second_heap = initialise_cpu(ARRAY_SIZE, 1);
+    while (cpu_is_empty(first_heap) != true) {
+        cpu_push(&second_heap, cpu_pop(&first_heap));
     }
 
     printf("second_heap: ");
-    print_heap(second_heap);
+    print_cpu(second_heap);
 
-    heap_sort(&second_heap);
+    cpu_sort(&second_heap);
     printf("second_heap sorted: ");
-    print_heap(second_heap);
+    print_cpu(second_heap);
 
-    free_min_heap(first_heap);
-    free_min_heap(second_heap);
+    free_cpu(first_heap);
+    free_cpu(second_heap);
 
     return 0;
 }

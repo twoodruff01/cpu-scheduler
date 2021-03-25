@@ -9,12 +9,13 @@ typedef struct {
     int remaining_run_time;  // priority 1
 } process;
 
+
 void swap_process(process *p1, process *p2);
-bool less_than(process *p1, process *p2);
+void swap_process_pointers(process **p1, process **p2);
+bool process_less_than(process *p1, process *p2);
 void print_process_running(process *p, int current_time, int cpu_id);
 void print_process_finished(process *p, int current_time, int processes_remaining);
 process *process_from_row(int arrival_time, int pid, int run_time, char parallelisable_char);
-
 void print_process(process *p);
 
 #endif
