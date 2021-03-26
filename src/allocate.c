@@ -92,41 +92,60 @@ int main(int argc, char **argv) {
     /*
     -----------------------Actual Algorithm-----------------------
     */
-    // int time = 0;
-    // process **parallelized;
+    int time = 0;
+    int next_arrival_time = 0;
+    process *current_process = NULL;
+    process *next_process = NULL;
+    process **parallelized;
     process **all_processes = read_input_file(input_file_name);
     multicore *cores = initialise_cores(number_of_processors);
 
     int i = 0;
     while (true) {
 
-        process *current_process = all_processes[i];
-        process *next_process = all_processes[i + 1];
+        current_process = all_processes[i];
+        next_process = all_processes[i + 1];
 
-        if (current_process->is_parallelisable != true) {
+        if (current_process->is_parallelisable == true) {
+            /*
+            TODO:
+            - Split process into sub-processes and add them to cpu's.
+            - Also keep track of them somehow.
+            - int sub_processes = max(number_of_processors, current_process->run_time);
+            */
+
+        } else {
             // Just add process to one cpu.
             multicore_add_process(&cores, current_process);
             printf("------ADDING:");
             print_process(current_process);
-
-        } else {
-            // Split process into sub-processes and add them to cpu's.
-            // Also keep track of them somehow.
-            // int sub_processes = max(number_of_processors, current_process->run_time);
         }
 
-
-
-
-
-        print_multicore(cores);
-
-
-
-
-
+        // fast_forward():
         if (next_process == NULL) {
+            // No more processes will be added, so just run all the remaining ones to completion.
+            // while (cpu_is_empty(cores->cpu_array[1]) != true) {
+
+            // }
             break;
+
+        } else if (next_process->arrival_time == time) {
+            // Run all the processes up till the next arrival time.
+            next_arrival_time = next_process->arrival_time;
+            while (time < next_arrival_time) {
+
+                // Sort cpu's by rem-time and cpu id. Have to do this in order to print stuff out as the spec requested.
+                multicore_sort(&cores);
+                for (int j = 1; j <= cores->last_index; j++) {
+                    // check finshed
+                }
+                for (int j = 1; j <= cores->last_index; j++) {
+                    // check running
+                }
+                
+                multicore_heapify(&cores);
+                time++;
+            }
         }
         i++;
     }

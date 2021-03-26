@@ -14,6 +14,7 @@ cpu is just a min_heap of processes sorted on:
 TODO:
 - Decide where to decrement cpu's total_remaining_run_time
     in pop() ? or using peek() outside of this file?
+- Figure out when all of process's sub-processes have finished
 */
 
 /*
@@ -175,13 +176,7 @@ Bases this on:
 2. CPU id
 */
 bool cpu_less_than(cpu *c1, cpu *c2) {
-    int c1_priority_1 = c1->total_remaining_run_time;
-    int c1_priority_2 = c1->cpu_id;
-
-    int c2_priority_1 = c2->total_remaining_run_time;
-    int c2_priority_2 = c2->cpu_id;
-
-    return (c1_priority_1 < c2_priority_1 || (c1_priority_1 == c2_priority_1 && c1_priority_2 < c2_priority_2));
+    return (c1->total_remaining_run_time < c2->total_remaining_run_time || (c1->total_remaining_run_time == c2->total_remaining_run_time && c1->cpu_id < c2->cpu_id));
 }
 
 

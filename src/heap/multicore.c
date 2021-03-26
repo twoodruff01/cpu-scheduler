@@ -72,7 +72,7 @@ Adds process to the highest priotity cpu on the multicore, then fixes the heap
 */
 void multicore_add_process(multicore **cores, process *new_process) {
     cpu *first_cpu = ((*cores)->cpu_array)[1];
-    assert(first_cpu);
+    assert(first_cpu);  // TODO: remove before submission.
     cpu_push(&first_cpu, new_process);
 
     // Put the last cpu at the front and fix the heap.

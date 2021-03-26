@@ -1,5 +1,7 @@
 CC=gcc
 
+#TODO: Change flags before submission
+
 ### Submission ###
 # CFLAGS = -Wall -O3
 
