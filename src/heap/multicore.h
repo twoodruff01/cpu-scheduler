@@ -15,7 +15,7 @@ typedef struct {
 multicore *initialise_cores(int cpu_quantity);
 void multicore_push(multicore **cores, cpu *new_cpu);
 void multicore_add_process(multicore **cores, process *new_process);
-bool multicore_is_empty(multicore *cores);
+bool multicore_has_process(multicore *cores);
 void free_cores(multicore *cores);
 void multicore_sort(multicore **cores, bool on_pid);
 void multicore_heapify(multicore **cores, bool on_pid);

@@ -82,14 +82,15 @@ void multicore_add_process(multicore **cores, process *new_process) {
 
 
 /*
-Assumes that we're incrementing and decrementing heap->last_index properly.
+Returns true if any of the cpu's on the multicore still contain a process.
 */
-bool multicore_is_empty(multicore *cores) {
-    if (cores->last_index <= 0) {
-        return true;
-    } else {
-        return false;
+bool multicore_has_process(multicore *cores) {
+    for (int i = cores->last_index; i >= 1; i--) {
+        if (cpu_is_empty((cores->cpu_array)[i]) != true) {
+            return true;
+        }
     }
+    return false;
 }
 
 
@@ -151,7 +152,7 @@ void _multicore_downheap(multicore **cores, int start_index, bool (*less_than)(c
     int heap_length = (*cores)->last_index;
 
     // Avoid bugs.
-    if (multicore_is_empty(*cores) == true) {
+    if ((*cores)->last_index <= 0) {
         return;
     }
 
@@ -183,11 +184,10 @@ void _multicore_downheap(multicore **cores, int start_index, bool (*less_than)(c
 Just for debugging
 */
 void print_multicore(multicore *cores) {
-    if (multicore_is_empty(cores) != true) {
-        for (int i = 1; i <= cores->last_index; i++) {
-            print_cpu(cores->cpu_array[i]);
-        }
-    } else {
-        printf("Multicore empty...\n");
+    for (int i = 1; i <= cores->last_index; i++) {
+        print_cpu(cores->cpu_array[i]);
+    }
+    if (cores->last_index <= 0) {
+        printf("How is this possible?\n");
     }
 }

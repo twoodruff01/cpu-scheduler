@@ -198,6 +198,14 @@ bool cpu_less_than(cpu *c1, cpu *c2) {
 }
 
 
+/*
+Returns true if first cpu's pid is less than the second.
+*/
+bool cpu_pid_less_than(cpu *c1, cpu *c2) {
+    return (c1->cpu_id < c2->cpu_id);
+}
+
+
 void swap_cpu_pointers(cpu **c1, cpu **c2) {
     cpu *temp_cpu = *c1;
     *c1 = *c2;

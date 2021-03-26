@@ -24,6 +24,7 @@ void cpu_sort(cpu **current_cpu);
 void cpu_heapify(cpu **current_cpu);
 
 bool cpu_less_than(cpu *c1, cpu *c2);
+bool cpu_pid_less_than(cpu *c1, cpu *c2);
 void swap_cpu_pointers(cpu **c1, cpu **c2);
 void print_cpu(cpu *current_cpu);
 
