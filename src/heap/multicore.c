@@ -11,10 +11,6 @@ multicore is just a min_heap of cpu's, sorted on:
 #include "multicore.h"
 #include "cpu.h"
 
-/*
-TODO:
-- Find some way of decrementing CPU processes.
-*/
 
 /*
 Create new cores in memory.
@@ -72,11 +68,15 @@ Adds process to the highest priority cpu on the multicore, then fixes the heap
 */
 void multicore_add_process(multicore **cores, process *new_process) {
     cpu *first_cpu = ((*cores)->cpu_array)[1];
-    assert(first_cpu);  // TODO: remove before submission.
     cpu_push(&first_cpu, new_process);
 
-    // Put the last cpu at the front and fix the heap.
-    swap_cpu_pointers(&(((*cores)->cpu_array)[1]), &(((*cores)->cpu_array)[(*cores)->last_index]));
+    /*
+    TODO:
+    - Make sure that this is actually working
+    */
+    // multicore_heapify(cores, false);
+
+    // Fix the heap.
     _multicore_downheap(cores, 1, cpu_less_than);
 }
 

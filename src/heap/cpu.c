@@ -13,8 +13,6 @@ cpu is just a min_heap of processes sorted on:
 
 /*
 TODO:
-- Decide where to decrement cpu's total_remaining_run_time
-    in pop() ? or using peek() outside of this file?
 - Figure out when all of process's sub-processes have finished
 */
 

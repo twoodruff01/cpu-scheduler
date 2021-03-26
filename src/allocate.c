@@ -100,6 +100,25 @@ void run_one_second(multicore **cores, int *remaining_processes, int *time, int 
     cpu *current_cpu = NULL;
     process *first_process = NULL;
 
+    // check if remaining processes as changed.
+    // This is the most ridiculous assigment
+    // I could have learnt far more important shit in
+    // the time it's taken me to write all of these ridiculous
+    // functions just to satisfy all of your stupid edge cases
+    // oh and I still know fuck all about scheduling, cause i haven't actually had time to look that up.
+    for (int j = (*cores)->last_index; j >= 1; j--) {
+        current_cpu = ((*cores)->cpu_array)[j];
+        if (cpu_is_empty(current_cpu) == true) {
+            continue;
+        } else {
+            first_process = cpu_peek(current_cpu);
+        }
+        if (first_process->remaining_run_time == 0) {
+            // TODO: edit this to handle sub-processes.
+            (*remaining_processes)--;
+        }
+    }
+
     // Print finished processes first
     for (int j = (*cores)->last_index; j >= 1; j--) {
         current_cpu = ((*cores)->cpu_array)[j];
@@ -123,7 +142,6 @@ void run_one_second(multicore **cores, int *remaining_processes, int *time, int 
                 *max_overhead = time_overhead;
             }
 
-            (*remaining_processes)--;
             print_process_finished(first_process, *time, *remaining_processes);
             free(cpu_pop(&current_cpu));
         }
@@ -174,40 +192,65 @@ int main(int argc, char **argv) {
     */
 
     int time = 0;
-    int remaining_processes = 0;
+    int remaining_processes = 0;  // I think this actually means the number of processes that have arrived but not been started
     process *current_process = NULL;
     process *next_process = NULL;
     // process **parallelized;
     process **all_processes = read_input_file(input_file_name, &number_of_processes);
     multicore *cores = initialise_cores(number_of_processors);
+    cpu *temp_process_heap = initialise_cpu(INITIAL_PROCESSES_BUDGET, -1);
 
     int i = 0;
     while (true) {
 
+        // By default, add each new process to the process buffer.
         current_process = all_processes[i];
         next_process = all_processes[i + 1];
-
-        if (current_process->is_parallelisable == true) {
-            /*
-            TODO:
-            - Split process into sub-processes and add them to cpu's.
-            - Also keep track of them somehow.
-            - int sub_processes = max(number_of_processors, current_process->run_time);
-            */
-            // remaining_processes++;
-
-        } else {
-            // Just add process to one cpu.
-            multicore_add_process(&cores, current_process);
-            // printf("------ADDING:");
-            // print_process(current_process);
-            remaining_processes++;
+        if (current_process != NULL) {
+            cpu_push(&temp_process_heap, current_process);
+            i++;
         }
-        // print_multicore(cores);
+
+        // If more than one process arrives at the same time, just add them all to the buffer.
+        while (next_process != NULL && next_process->arrival_time == current_process->arrival_time) {
+            current_process = all_processes[i];
+            next_process = all_processes[i + 1];
+            cpu_push(&temp_process_heap, current_process);
+            i++;
+        }
+        
+        // Now go through all of the processes that have arrived in the last second and
+        // add them to cpu(s).
+        while (cpu_is_empty(temp_process_heap) != true) {
+
+            // Watch out for this little fucker creating memory problems
+            process *process_to_add = cpu_pop(&temp_process_heap);
+            assert(process_to_add);
+
+            if (process_to_add->is_parallelisable == true) {
+                /*
+                TODO:
+                - Split process into sub-processes and add them to cpu's.
+                - Also keep track of them somehow.
+                - int sub_processes = max(number_of_processors, current_process->run_time);
+                */
+                // remaining_processes++;
+
+            } else {
+                // Just add process to one cpu.
+                multicore_add_process(&cores, process_to_add);
+                // printf("------ADDING:");
+                // print_process(current_process);
+                // print_multicore(cores);
+                remaining_processes++;   
+            }
+        }
 
         // Run all of the processes up to the next appropriate time.
         if (next_process == NULL) {
             // No more processes will be added, so just run all the remaining ones to completion.
+            // print_multicore(cores);
+            // return 0;
             while (multicore_has_process(cores) == true) {
                 run_one_second(&cores, &remaining_processes, &time, &total_turnaround, &max_overhead, &total_overhead);
             }
@@ -218,31 +261,12 @@ int main(int argc, char **argv) {
             // Run all the processes up till the next arrival time.
             run_one_second(&cores, &remaining_processes, &time, &total_turnaround, &max_overhead, &total_overhead);
         }
-
-
-        // if (next_process == NULL) {
-        //     printf("Before sorting:\n");
-        //     print_multicore(cores);
-
-        //     multicore_sort(&cores, false);
-        //     printf("After sorting:\n");
-        //     print_multicore(cores);
-
-        //     printf("Heapify on pid \n");
-        //     multicore_heapify(&cores, true);
-        //     print_multicore(cores);
-
-        //     printf("Sort on pid \n");
-        //     multicore_sort(&cores, true);
-        //     print_multicore(cores);
-        //     break;
-        // }
-        i++;
     }
     
     printf("Turnaround time %d\n", divide_round_int(total_turnaround, number_of_processes));
     printf("Time overhead %g %g\n", round_double_to_2(max_overhead), round_double_to_2(total_overhead / number_of_processes));
     printf("Makespan %d\n", time - 1);
+    free_cpu(temp_process_heap);
     free_cores(cores);
     free(all_processes);
     return 0;

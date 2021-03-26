@@ -12,12 +12,12 @@
 ./allocate -p 4 -f testcases/task5/input/test_p4_p_2.txt | diff - testcases/task5/output/test_p4_p_2.out
 ./allocate -p 1 -f testcases/task6/input/test_p1_n_1.txt | diff - testcases/task6/output/test_p1_n_1.out
 ./allocate -p 4 -f testcases/task6/input/test_p4_p_2.txt | diff - testcases/task6/output/test_p4_p_2.out
-./allocate -p 2 -f testcases/task7/test_chal_p2_n.txt
-./allocate -p 2 -f testcases/task7/test_chal_p2_p.txt
-./allocate -p 3 -f testcases/task7/test_chal_p3_p.txt
-./allocate -p 4 -f testcases/task7/test_chal_p4_n.txt
-./allocate -p 4 -f testcases/task7/test_chal_p4_p.txt
-./allocate -p 5 -f testcases/task7/test_chal_p5_n.txt
-./allocate -p 5 -f testcases/task7/test_chal_p5_p.txt
-./allocate -p 6 -f testcases/task7/test_chal_p6_n.txt
-./allocate -p 6 -f testcases/task7/test_chal_p6_p.txt
+./allocate -p 2 -f testcases/task7/test_chal_p2_n.txt -c
+./allocate -p 2 -f testcases/task7/test_chal_p2_p.txt -c
+./allocate -p 3 -f testcases/task7/test_chal_p3_p.txt -c
+./allocate -p 4 -f testcases/task7/test_chal_p4_n.txt -c
+./allocate -p 4 -f testcases/task7/test_chal_p4_p.txt -c
+./allocate -p 5 -f testcases/task7/test_chal_p5_n.txt -c
+./allocate -p 5 -f testcases/task7/test_chal_p5_p.txt -c
+./allocate -p 6 -f testcases/task7/test_chal_p6_n_equal.txt -c
+./allocate -p 6 -f testcases/task7/test_chal_p6_p_equal.txt -c
