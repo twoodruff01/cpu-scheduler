@@ -6,6 +6,7 @@ functions and data types that get used everywhere
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "utils.h"
 
 
@@ -92,6 +93,8 @@ process *process_from_row(int arrival_time, char *pid, int run_time, char parall
 
     // Process hasn't been given any CPU time yet:
     new_process->remaining_run_time = run_time;
+    new_process->is_running = false;
+    new_process->is_sub_process = false;
 
     return new_process;
 }
@@ -124,6 +127,27 @@ int max(int a, int b) {
     } else {
         return b;
     }
+}
+
+
+/*
+Does integer division and rounds up the result if needed.
+*/
+int divide_round_int(int a, int b) {
+    int remainder = a % b;
+    if (remainder == 0) {
+        return a / b;
+    } else {
+        return a / b + 1;
+    }
+}
+
+
+/*
+Rounds the given double to 2 decimal places
+*/
+double round_double_to_2(double input) {
+    return roundl(input * 100.0) / 100.0;
 }
 
 

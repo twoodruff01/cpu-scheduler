@@ -7,6 +7,7 @@ cpu is just a min_heap of processes sorted on:
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <string.h>
 #include "../utils.h"
 #include "cpu.h"
 
@@ -42,11 +43,23 @@ cpu *initialise_cpu(int initial_size, int id) {
 Add item to heap.
 Will increase size of heap if needed.
 I should probably pull an 'upheap()' function out of this...
+If the process that is currently first ends up not being first, this will update its -
+is_running variable to false.
 */
 void cpu_push(cpu **current_cpu, process *new_process) {
 
     // Update cpu's workload.
     (*current_cpu)->total_remaining_run_time += new_process->remaining_run_time;
+
+    // Keep track of whether the process at the front ends up being the same.
+    // Assume it won't be, then check later on and if it is, change value back to true.
+    char *previous_process_pid = NULL;
+    bool previous_process_run_status = false;
+    if (cpu_is_empty(*current_cpu) != true) {
+        previous_process_pid = ((*current_cpu)->process_array[1])->pid;
+        previous_process_run_status = ((*current_cpu)->process_array)[1]->is_running;
+        ((*current_cpu)->process_array)[1]->is_running = false;
+    }
 
     // Increase index of heap before we try putting anything in it.
     int index = (*current_cpu)->last_index + 1;
@@ -72,6 +85,11 @@ void cpu_push(cpu **current_cpu, process *new_process) {
             swap_process_pointers(&(((*current_cpu)->process_array)[index]), &(((*current_cpu)->process_array)[index / 2]));
             index /= 2;
         }
+    }
+
+    // If the same process is still at the front, change that process's is_running value back to what it was before.
+    if (previous_process_pid != NULL && strcmp(((*current_cpu)->process_array)[1]->pid, previous_process_pid) == 0) {
+        ((*current_cpu)->process_array)[1]->is_running = previous_process_run_status;
     }
 }
 

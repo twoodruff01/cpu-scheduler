@@ -6,7 +6,7 @@ CC=gcc
 # CFLAGS = -Wall -O3
 
 ### Testing ###
-CFLAGS = -Wall -Wextra -W -Wshadow -O3 -g3
+CFLAGS = -Wall -Wextra -W -Wshadow -g3 -lm
 
 BUILD_SRC = src/utils.o src/heap/cpu.o src/heap/multicore.o src/allocate.o
 -B: $(BUILD_SRC)

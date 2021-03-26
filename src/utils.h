@@ -12,6 +12,7 @@ typedef struct {
     bool is_parallelisable;
     int remaining_run_time;  // priority 1
 
+    bool is_running;
     bool is_sub_process;
 
 } process;
@@ -26,6 +27,8 @@ void print_process_running(process *p, int current_time, int cpu_id);
 void print_process_finished(process *p, int current_time, int processes_remaining);
 void print_process(process *p);
 int max(int a, int b);
+int divide_round_int(int a, int b);
+double round_double_to_2(double input);
 
 int *_string_to_int_array(char *input);
 

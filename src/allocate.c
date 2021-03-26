@@ -46,7 +46,7 @@ Reads every line in the given file into an array of processes.
 Does absolutely no format checking.
 The returned array should be in the same order as the file was.
 */
-process **read_input_file(char *filename) {
+process **read_input_file(char *filename, int *number_of_processes) {
 
     FILE *input_process_file = fopen(filename, "r");
     assert(input_process_file);
@@ -77,9 +77,78 @@ process **read_input_file(char *filename) {
     }
     fclose(input_process_file);
 
+    *number_of_processes = index;
+
     // Set sentinel to NULL for when you iterate through the array later.
     all_processes[index] = NULL;
     return all_processes;
+}
+
+/*
+Go through each cpu and give each first process one second of cpu time.
+- Check for and print finished processes first.
+- Check for and print running processes second.
+*/
+void run_one_second(multicore **cores, int *remaining_processes, int *time, int *total_turnaround, double *max_overhead, double *average_overhead) {
+
+    // Sort cpu's by rem-time and cpu id. Have to do this in order to print stuff out as the spec requested.
+    multicore_sort(cores);
+
+    cpu *current_cpu = NULL;
+    process *first_process = NULL;
+
+    // Print finished processes first
+    for (int j = (*cores)->last_index; j >= 1; j--) {
+        current_cpu = ((*cores)->cpu_array)[j];
+        first_process = cpu_peek(current_cpu);
+
+        // If this cpu is empty, all the next ones will be too.
+        if (first_process == NULL) {
+            break;
+        }
+        
+        // Check if process has finished.
+        if (first_process->remaining_run_time == 0) {
+            // TODO: edit this to handle sub-processes.
+
+            // Calculate statistics
+            int turnaround_time = *time - first_process->arrival_time; 
+            *total_turnaround += turnaround_time;
+            double time_overhead = ((double) turnaround_time) / ((double) first_process->run_time);
+            *average_overhead += time_overhead;
+            if (time_overhead > *max_overhead) {
+                *max_overhead = time_overhead;
+            }
+
+            (*remaining_processes)--;
+            print_process_finished(first_process, *time, *remaining_processes);
+            free(cpu_pop(&current_cpu));
+        }
+    }
+
+    // Print running processes second
+    for (int j = (*cores)->last_index; j >= 1; j--) {
+        current_cpu = ((*cores)->cpu_array)[j];
+        first_process = cpu_peek(current_cpu);
+
+        // If this cpu is empty, all the next ones will be too.
+        if (first_process == NULL) {
+            break;
+        }
+
+        // Check if process if already running.
+        // cpu_push will update this variable elsewhere if the process moves.
+        if (first_process->is_running == false) {
+            first_process->is_running = true;
+            print_process_running(first_process, *time, current_cpu->cpu_id);
+        }
+
+        first_process->remaining_run_time--;
+
+    }
+    
+    multicore_heapify(cores);
+    (*time)++;
 }
 
 
@@ -92,12 +161,18 @@ int main(int argc, char **argv) {
     /*
     -----------------------Actual Algorithm-----------------------
     */
+    int total_turnaround = 0;
+    int number_of_processes = 0;
+    double max_overhead = 0;
+    double total_overhead = 0;
+
     int time = 0;
     int next_arrival_time = 0;
+    int remaining_processes = 0;
     process *current_process = NULL;
     process *next_process = NULL;
     process **parallelized;
-    process **all_processes = read_input_file(input_file_name);
+    process **all_processes = read_input_file(input_file_name, &number_of_processes);
     multicore *cores = initialise_cores(number_of_processors);
 
     int i = 0;
@@ -107,6 +182,7 @@ int main(int argc, char **argv) {
         next_process = all_processes[i + 1];
 
         if (current_process->is_parallelisable == true) {
+            // remaining_processes++;
             /*
             TODO:
             - Split process into sub-processes and add them to cpu's.
@@ -117,52 +193,32 @@ int main(int argc, char **argv) {
         } else {
             // Just add process to one cpu.
             multicore_add_process(&cores, current_process);
-            printf("------ADDING:");
-            print_process(current_process);
+            remaining_processes++;
+            // printf("------ADDING:");
+            // print_process(current_process);
         }
 
-        // fast_forward():
+        // Run all of the processes up to the next appropriate time.
         if (next_process == NULL) {
             // No more processes will be added, so just run all the remaining ones to completion.
-            // while (cpu_is_empty(cores->cpu_array[1]) != true) {
-
-            // }
+            while (cpu_is_empty(cores->cpu_array[1]) != true) {
+                run_one_second(&cores, &remaining_processes, &time, &total_turnaround, &max_overhead, &total_overhead);
+            }
             break;
 
-        } else if (next_process->arrival_time == time) {
+        } else if (next_process->arrival_time > time) {  // Ensure processes with same arrival time all get added.
             // Run all the processes up till the next arrival time.
-            next_arrival_time = next_process->arrival_time;
-            while (time < next_arrival_time) {
-
-                // Sort cpu's by rem-time and cpu id. Have to do this in order to print stuff out as the spec requested.
-                multicore_sort(&cores);
-                for (int j = 1; j <= cores->last_index; j++) {
-                    // check finshed
-                }
-                for (int j = 1; j <= cores->last_index; j++) {
-                    // check running
-                }
-                
-                multicore_heapify(&cores);
-                time++;
+            while (time < next_process->arrival_time) {
+                run_one_second(&cores, &remaining_processes, &time, &total_turnaround, &max_overhead, &total_overhead);
             }
         }
         i++;
     }
     
-    /*
-    Plan for freeing:
-    - When a process finishes: free it.
-    - At the end, this should mean that all I have to do is:
-        free_cores(cores)
-        free(all_processes)
-    */
+    printf("Turnaround time %d\n", divide_round_int(total_turnaround, number_of_processes));
+    printf("Time overhead %g %g\n", round_double_to_2(max_overhead), round_double_to_2(total_overhead / number_of_processes));
+    printf("Makespan %d\n", time - 1);
     free_cores(cores);
-    i = 0;
-    while (all_processes[i] != NULL) {
-        free(all_processes[i]);
-        i++;
-    }
     free(all_processes);
     return 0;
 }
