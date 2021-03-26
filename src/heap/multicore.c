@@ -68,7 +68,7 @@ void multicore_push(multicore **cores, cpu *new_cpu) {
 
 
 /*
-Adds process to the highest priotity cpu on the multicore, then fixes the heap
+Adds process to the highest priority cpu on the multicore, then fixes the heap
 */
 void multicore_add_process(multicore **cores, process *new_process) {
     cpu *first_cpu = ((*cores)->cpu_array)[1];
@@ -77,7 +77,7 @@ void multicore_add_process(multicore **cores, process *new_process) {
 
     // Put the last cpu at the front and fix the heap.
     swap_cpu_pointers(&(((*cores)->cpu_array)[1]), &(((*cores)->cpu_array)[(*cores)->last_index]));
-    _multicore_downheap(cores, 1);
+    _multicore_downheap(cores, 1, cpu_less_than);
 }
 
 
@@ -107,13 +107,17 @@ void free_cores(multicore *cores) {
 
 /*
 Sorts in descending order. (using heap_sort)
-Turns the heap into a glorified sorted list of processes.
+Turns the heap into a glorified sorted list.
 */
-void multicore_sort(multicore **cores) {
+void multicore_sort(multicore **cores, bool on_pid) {
     int initial_length = (*cores)->last_index;
     while ((*cores)->last_index > 1) {
-        swap_cpu_pointers(&(((*cores)->cpu_array)[1]), &(((*cores)->cpu_array)[(*cores)->last_index--]));  // check this !!!
-        _multicore_downheap(cores, 1);
+        swap_cpu_pointers(&(((*cores)->cpu_array)[1]), &(((*cores)->cpu_array)[(*cores)->last_index--]));
+        if (on_pid == true) {
+            _multicore_downheap(cores, 1, cpu_pid_less_than);
+        } else {
+            _multicore_downheap(cores, 1, cpu_less_than);
+        }
     }
     (*cores)->last_index = initial_length;
 }
@@ -124,11 +128,15 @@ Turns a heap that has been sorted by heap_sort() back into a heap.
 The heap might not be exactly the same as the previous one, since children only have to
 be smaller than their parents and this could change between building the same heap.
 */
-void multicore_heapify(multicore **cores) {
+void multicore_heapify(multicore **cores, bool on_pid) {
     // downHeap() for each sub-heap in the heap, starting from 1 level above leaves
     int sub_heap_index = (*cores)->last_index / 2;
     while (sub_heap_index >= 1) {
-        _multicore_downheap(cores, sub_heap_index);
+        if (on_pid == true) {
+            _multicore_downheap(cores, sub_heap_index, cpu_pid_less_than);
+        } else {
+            _multicore_downheap(cores, sub_heap_index, cpu_less_than);
+        }
         sub_heap_index--;
     }
 }
@@ -139,7 +147,7 @@ Fixes the heap, starting at start_index.
 Should generally be called with start_index=1 if you haven't already
 called it on the heap recently.
 */
-void _multicore_downheap(multicore **cores, int start_index) {
+void _multicore_downheap(multicore **cores, int start_index, bool (*less_than)(cpu *, cpu *)) {
     int heap_length = (*cores)->last_index;
 
     // Avoid bugs.
@@ -156,12 +164,12 @@ void _multicore_downheap(multicore **cores, int start_index) {
         // Only compare the smaller child.
         cpu *child_1 = ((*cores)->cpu_array)[child_index];
         cpu *child_2 = ((*cores)->cpu_array)[child_index + 1];
-        if ((child_index < heap_length) && (child_2 != 0) && cpu_less_than(child_2, child_1) == true) {
+        if ((child_index < heap_length) && (child_2 != 0) && (*less_than)(child_2, child_1) == true) {
             child_index++;
         }
 
         // Stop when parent smaller then child
-        if (cpu_less_than(((*cores)->cpu_array)[parent_index], ((*cores)->cpu_array)[child_index]) == true) {
+        if ((*less_than)(((*cores)->cpu_array)[parent_index], ((*cores)->cpu_array)[child_index]) == true) {
             break;
         }
         
@@ -179,5 +187,7 @@ void print_multicore(multicore *cores) {
         for (int i = 1; i <= cores->last_index; i++) {
             print_cpu(cores->cpu_array[i]);
         }
+    } else {
+        printf("Multicore empty...\n");
     }
 }

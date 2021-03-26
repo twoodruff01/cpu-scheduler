@@ -17,11 +17,11 @@ void multicore_push(multicore **cores, cpu *new_cpu);
 void multicore_add_process(multicore **cores, process *new_process);
 bool multicore_is_empty(multicore *cores);
 void free_cores(multicore *cores);
-void multicore_sort(multicore **cores);
-void multicore_heapify(multicore **cores);
+void multicore_sort(multicore **cores, bool on_pid);
+void multicore_heapify(multicore **cores, bool on_pid);
 
 void print_multicore(multicore *cores);
 
-void _multicore_downheap(multicore **cores, int start_index);
+void _multicore_downheap(multicore **cores, int start_index, bool (*less_than)(cpu *, cpu *));
 
 #endif
