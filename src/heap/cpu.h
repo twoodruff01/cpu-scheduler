@@ -1,5 +1,5 @@
-#ifndef MIN_HEAP
-#define MIN_HEAP
+#ifndef CPU
+#define CPU
 
 #include <stdbool.h>
 #include "../utils.h"

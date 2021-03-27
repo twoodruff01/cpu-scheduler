@@ -8,7 +8,7 @@ CC=gcc
 ### Testing ###
 CFLAGS = -Wall -Wextra -W -Wshadow -g3 -lm
 
-BUILD_SRC = src/utils.o src/heap/cpu.o src/heap/multicore.o src/allocate.o
+BUILD_SRC = src/utils.o src/heap/cpu.o src/heap/multicore.o src/linked_list/linked_list.o src/allocate.o
 -B: $(BUILD_SRC)
 	$(CC) -o allocate $(BUILD_SRC) $(CFLAGS)
 
@@ -19,4 +19,4 @@ heap: $(DEV_SRC)
 
 
 clean:
-	rm -f allocate heap_program *.o src/*.o src/heap/*.o *.txt *.out *.gch
+	rm -f allocate heap_program *.o src/*.o src/heap/*.o src/linked_list/*.o *.txt *.out *.gch

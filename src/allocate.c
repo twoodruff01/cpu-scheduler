@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
+#include "linked_list/linked_list.h"
 #include "heap/multicore.h"
 #include "heap/cpu.h"
 #include "utils.h"
@@ -111,7 +112,13 @@ void run_one_second(multicore **cores, int *remaining_processes, int *time, int 
             first_process = cpu_peek(current_cpu);
         }
         if (first_process->remaining_run_time == 0) {
+            
             // TODO: edit this to handle sub-processes.
+            if (first_process->is_sub_process) {
+                // check if this is the last sub-process
+
+            }
+
             (*remaining_processes)--;
         }
     }
@@ -128,10 +135,11 @@ void run_one_second(multicore **cores, int *remaining_processes, int *time, int 
         
         // Check if process has finished.
         if (first_process->remaining_run_time == 0) {
+            
             // TODO: edit this to handle sub-processes.
-
             if (first_process->is_sub_process) {
-                // c'mon
+                // check if this is the last sub-process
+
             }
 
             // Calculate statistics
@@ -220,7 +228,7 @@ int main(int argc, char **argv) {
     int remaining_processes = 0;  // I think this actually means the number of processes that have arrived but not been started
     process *current_process = NULL;
     process *next_process = NULL;
-    // process **parallelized;
+    linked_list *parallelized_processes = create_list();
     process **all_processes = read_input_file(input_file_name, &number_of_processes);
     multicore *cores = initialise_cores(number_of_processors);
     cpu *temp_process_buffer = initialise_cpu(INITIAL_PROCESSES_BUDGET, -1);
@@ -255,6 +263,12 @@ int main(int argc, char **argv) {
 
                 // TODO: keep track of sub-processes somehow.
 
+                insert_process(&parallelized_processes, process_to_add);
+                
+
+
+                // Split into sub-processes and add each of them to the cpu
+                // TODO: Maybe add these to the temp_process_buffer instead of adding them straight into the multicore? So if you get two parralielisable processes at the same time, stuff still works ???
                 int sub_process_quantity = min(number_of_processors, process_to_add->run_time);
                 int execution_time = process_to_add->run_time / sub_process_quantity + 1;  // TODO: integer division ok?
                 for (int j = 0; j < sub_process_quantity; j++) {
@@ -271,7 +285,7 @@ int main(int argc, char **argv) {
                 // printf("------ADDING:");
                 // print_process(current_process);
                 // print_multicore(cores);
-                remaining_processes++;   
+                remaining_processes++;   // Careful with this if you decide to also add sub-processes here
             }
         }
 
@@ -290,6 +304,8 @@ int main(int argc, char **argv) {
             run_one_second(&cores, &remaining_processes, &time, &total_turnaround, &max_overhead, &total_overhead);
         }
     }
+
+    print_list(parallelized_processes);
     
     printf("Turnaround time %d\n", divide_round_int(total_turnaround, number_of_processes));
     printf("Time overhead %g %g\n", round_double_to_2(max_overhead), round_double_to_2(total_overhead / number_of_processes));
