@@ -84,6 +84,7 @@ process **read_input_file(char *filename, int *number_of_processes) {
     return all_processes;
 }
 
+
 /*
 Go through each cpu and give each first process one second of cpu time.
 - Check for and print finished processes first.
@@ -246,18 +247,23 @@ int main(int argc, char **argv) {
         // Now add all of the processes that have arrived in the last second to cpu(s).
         while (cpu_is_empty(temp_process_buffer) != true) {
 
-            // Watch out for this little fucker creating memory problems TODO
+            // TODO: watch out for this creating memory problems.
             process *process_to_add = cpu_pop(&temp_process_buffer);
             assert(process_to_add);  // TODO: remove
 
             if (process_to_add->is_parallelisable == true) {
-                /*
-                TODO:
-                - Split process into sub-processes and add them to cpu's.
-                - Also keep track of them somehow.
-                - int sub_processes = max(number_of_processors, current_process->run_time);
-                */
-                // remaining_processes++;
+
+                // TODO: keep track of sub-processes somehow.
+
+                int sub_process_quantity = min(number_of_processors, process_to_add->run_time);
+                int execution_time = process_to_add->run_time / sub_process_quantity + 1;  // TODO: integer division ok?
+                for (int j = 0; j < sub_process_quantity; j++) {
+                    process *new_sub_process = create_sub_process(process_to_add, execution_time, j);
+                    // printf("New sub-process: ");
+                    // print_process(new_sub_process);
+                    multicore_add_process(&cores, new_sub_process);
+                }
+                remaining_processes++;
 
             } else {
                 // Just add process to one cpu.

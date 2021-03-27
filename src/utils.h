@@ -23,10 +23,11 @@ void swap_process_pointers(process **p1, process **p2);
 bool process_less_than(process *p1, process *p2);
 bool pid_less_than(char *pid1, char *pid2);
 process *process_from_row(int arrival_time, char *pid, int run_time, char parallelisable_char);
+process *create_sub_process(process *parent, int execution_time, int sub_number);
 void print_process_running(process *p, int current_time, int cpu_id);
 void print_process_finished(process *p, int current_time, int processes_remaining);
 void print_process(process *p);
-int max(int a, int b);
+int min(int a, int b);
 int divide_round_int(int a, int b);
 double round_double_to_2(double input);
 

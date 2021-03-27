@@ -100,6 +100,36 @@ process *process_from_row(int arrival_time, char *pid, int run_time, char parall
 }
 
 
+/*
+Creates a sub process using a parent process.
+*/
+process *create_sub_process(process *parent, int execution_time, int sub_number) {
+
+    process *new_sub_process = malloc(sizeof(process));
+    assert(new_sub_process);
+
+    // Turn sub_number into a string.
+    char sub_number_string[PID_MAX_LENGTH] = "";
+    sprintf(sub_number_string, "%d", sub_number);
+
+    char new_id[PID_MAX_LENGTH] = "";
+    strcat(new_id, parent->pid);
+    strcat(new_id, ".");
+    strcat(new_id, sub_number_string);
+    strcpy(new_sub_process->pid, new_id);
+
+    new_sub_process->arrival_time = parent->arrival_time;
+    new_sub_process->run_time = execution_time;
+    new_sub_process->is_parallelisable = false;
+    new_sub_process->remaining_run_time = execution_time;
+
+    new_sub_process->is_running = false;
+    new_sub_process->is_sub_process = true;
+
+    return new_sub_process;
+}
+
+
 void print_process_running(process *p, int current_time, int cpu_id) {
     printf("%d,RUNNING,pid=%s,remaining_time=%d,cpu=%d\n", current_time, p->pid, p->remaining_run_time, cpu_id);
 }
@@ -119,10 +149,10 @@ void print_process(process *p) {
 
 
 /*
-The number of sub-processes should be the greater of K processors and x execution time
+The number of sub-processes should be the lesser of K processors and x execution time
 */
-int max(int a, int b) {
-    if (a >= b) {
+int min(int a, int b) {
+    if (a < b) {
         return a;
     } else {
         return b;

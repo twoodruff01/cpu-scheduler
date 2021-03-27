@@ -26,7 +26,7 @@ cpu *initialise_cpu(int initial_size, int id) {
     assert(new_cpu);
     
     // This needs to be length+1 or you'll go past the end of the array without realising
-    new_cpu->process_array = malloc(sizeof(process) * (initial_size + 1));  // !!! process*
+    new_cpu->process_array = malloc(sizeof(process) * (initial_size + 1));
     assert(new_cpu->process_array);
     new_cpu->array_size = initial_size;
     new_cpu->last_index = 0;
@@ -40,7 +40,6 @@ cpu *initialise_cpu(int initial_size, int id) {
 /*
 Add item to heap.
 Will increase size of heap if needed.
-I should probably pull an 'upheap()' function out of this...
 If the process that is currently first ends up not being first, this will update its -
 is_running variable to false.
 */
