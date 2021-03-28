@@ -16,7 +16,8 @@ typedef struct {
 linked_list *create_list();
 void insert_process(linked_list **head, process *new_process);
 process *find_parent(linked_list *head, process *child);
-void free_list(linked_list *head);
+void linked_list_remove_node(linked_list **head, process *p_to_delete);
+void free_linked_list(linked_list *head);
 void print_list(linked_list *head);
 
 #endif

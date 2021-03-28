@@ -134,7 +134,7 @@ void run_one_second(multicore **cores, linked_list **parallelized_processes, int
         if (first_process->remaining_run_time == 0 && first_process->is_sub_process) {
             // Sub-process has finished.
             process *parent_process = find_parent(*parallelized_processes, first_process);
-            if (parent_process->sub_processes_remaining == 0 && parent_process->parent_finished_printed == false) {
+            if (parent_process != NULL && parent_process->sub_processes_remaining == 0 && parent_process->parent_finished_printed == false) {
                 // The last sub-process just finished: so the parent process is done too!
                 update_statistics(*time, total_turnaround, average_overhead, max_overhead, parent_process->arrival_time, parent_process->run_time);
                 print_process_finished(parent_process, *time, *remaining_processes);
@@ -144,6 +144,7 @@ void run_one_second(multicore **cores, linked_list **parallelized_processes, int
                 - Remove parent from linked list
                 - free parent
                 */
+               linked_list_remove_node(parallelized_processes, parent_process);
             }
             // Take sub-process off cpu:
             free(cpu_pop(&current_cpu));
@@ -276,8 +277,13 @@ int main(int argc, char **argv) {
 
             process *process_to_add = cpu_pop(&temp_process_buffer);
 
-            if (process_to_add->is_parallelisable == true) {            
+            if (process_to_add->run_time == 1) {
+                // Edge case...
+                process_to_add->is_parallelisable = false;
+                multicore_add_process(&cores, process_to_add);
+                remaining_processes++;
 
+            } else if (process_to_add->is_parallelisable == true) {            
                 // Split into sub-processes and add each of them to the cpu
                 int sub_process_quantity = min(number_of_processors, process_to_add->run_time);
                 int execution_time = divide_round_int(process_to_add->run_time, sub_process_quantity) + 1;
@@ -285,7 +291,6 @@ int main(int argc, char **argv) {
                     process *new_sub_process = create_sub_process(process_to_add, execution_time, j);
                     multicore_add_process(&cores, new_sub_process);
                 }
-
                 process_to_add->sub_processes_remaining = sub_process_quantity;
                 insert_process(&parallelized_processes, process_to_add);
                 remaining_processes++;
@@ -314,6 +319,7 @@ int main(int argc, char **argv) {
     printf("Turnaround time %d\n", divide_round_int(total_turnaround, number_of_processes));
     printf("Time overhead %g %g\n", round_double_to_2(max_overhead), round_double_to_2(total_overhead / number_of_processes));
     printf("Makespan %d\n", time - 1);
+    free(parallelized_processes);
     free_cpu(temp_process_buffer);
     free_cores(cores);
     free(all_processes);
@@ -322,9 +328,6 @@ int main(int argc, char **argv) {
 
 /*
 Final TODO:
-- implement linked_list_delete()
-- fix memory leaks
-- get rid of cpu_test.c and edit makefile
 - merge with master
 - change how temp_cpu_buffer is used, so it stores all the created sub-processes in one second
 - check compile flags and commands

@@ -5,6 +5,7 @@ Contains all functions for lists/nodes in a singly linked list.
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
+#include "string.h"
 #include "../utils.h"
 #include "linked_list.h"
 
@@ -58,32 +59,76 @@ process *find_parent(linked_list *head, process *child) {
 }
 
 
-// /*
-// Frees all nodes in linked_list
-// - Doesn't free the processes.
-// */
-// void free_list(linked_list *head) {
+/*
+Find the matching process (using pid) and remove its node from the list.
+Also free the matching process.
+*/
+void linked_list_remove_node(linked_list **head, process *p_to_delete) {
+    struct list_node *p = (*head)->next_link;
 
-//     linked_list *p = head;
-//     while (p) {
+    if (p && strcmp(p->current_process->pid, p_to_delete->pid) == 0) {
+        if (p->next_link) {
+            // point to link after next.
+            (*head)->next_link = p->next_link;
+            free(p->current_process);
+            free(p);
+        } else {
+            // p is the only link in the list.
+            free(p->current_process);
+            free(p);
+            (*head)->next_link = NULL;
+        }
         
-//         linked_list *temp = p;
-//         p = p->next_link;
-//         free(temp);
-//     }
-// }
+    } else while (p && p->next_link) {
+
+        struct list_node *next_node = p->next_link;
+
+        if (strcmp(next_node->current_process->pid, p_to_delete->pid) == 0) {
+            if (next_node->next_link) {
+                // Point p to the link after next.
+                p->next_link = next_node->next_link;
+                free(next_node->current_process);
+                free(next_node);
+            } else {
+                // Next link is the last one in the list.
+                free(next_node->current_process);
+                free(next_node);
+                p->next_link = NULL;
+            }
+            return;
+            
+        } else {
+            p = p->next_link;
+        }
+    }
+}
+
+
+/*
+Frees all nodes in linked_list
+- Doesn't free the processes.
+*/
+void free_linked_list(linked_list *head) {
+    struct list_node *p = head->next_link;
+    while (p) {
+        struct list_node *temp = p;
+        p = p->next_link;
+        free(temp);
+    }
+    free(head);
+}
 
 
 /*
 Just for debugging.
 */
 void print_list(linked_list *head) {
-
     struct list_node *p = head->next_link;
+    int i = 0;
     while (p) {
-        
-        printf("LINKED LIST PROCESS: ");
+        printf("%d:", i);
         print_process(p->current_process);
         p = p->next_link;
+        i++;
     }    
 }
