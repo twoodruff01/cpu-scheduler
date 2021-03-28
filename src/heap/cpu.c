@@ -11,10 +11,6 @@ cpu is just a min_heap of processes sorted on:
 #include "../utils.h"
 #include "cpu.h"
 
-/*
-TODO:
-- Figure out when all of process's sub-processes have finished
-*/
 
 /*
 Create new cpu in memory.
@@ -148,6 +144,7 @@ Doesn't free processes on the cpu. If there are processes on it, you shouldn't b
 void free_cpu(cpu *current_cpu) {
 
     if (cpu_is_empty(current_cpu) != true) {
+        // TODO: remove.
         printf("\n\n\nYou're freeing a CPU with processes still on it.\n\n\n");
     }
     free(current_cpu->process_array);

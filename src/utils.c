@@ -88,6 +88,7 @@ process *process_from_row(int arrival_time, char *pid, int run_time, char parall
     } else if (parallelisable_char == 'p') {
         new_process->is_parallelisable = true;
     } else {
+        // TODO: remove.
         printf("Strange parallelisable input given in file: %c\n", parallelisable_char);
     }
 

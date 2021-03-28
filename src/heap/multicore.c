@@ -69,13 +69,6 @@ Adds process to the highest priority cpu on the multicore, then fixes the heap
 void multicore_add_process(multicore **cores, process *new_process) {
     cpu *first_cpu = ((*cores)->cpu_array)[1];
     cpu_push(&first_cpu, new_process);
-
-    /*
-    TODO:
-    - Make sure that this is actually working
-    */
-    // multicore_heapify(cores, false);
-
     // Fix the heap.
     _multicore_downheap(cores, 1, cpu_less_than);
 }
