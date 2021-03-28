@@ -33,6 +33,31 @@ void insert_process(linked_list **head, process *new_process) {
 }
 
 
+/*
+Return the parent process of the sub-process given
+Return null if no match found
+*/
+process *find_parent(linked_list *head, process *child) {
+
+    // Child id will be a decimal (ie 3.15) (as a string)
+    int *int_array = _string_to_int_array(child->pid);
+    int child_id_part1 = int_array[0];
+
+    struct list_node *p = head->next_link;
+    while (p) {
+        
+        // Parent id will be an integer (ie 3) (as a string)
+        if (atoi(p->current_process->pid) == child_id_part1) {
+            free(int_array);
+            return p->current_process;
+        }
+        p = p->next_link;
+    }
+    free(int_array);
+    return NULL;
+}
+
+
 // /*
 // Frees all nodes in linked_list
 // - Doesn't free the processes.

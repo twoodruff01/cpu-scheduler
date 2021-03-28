@@ -87,6 +87,25 @@ process **read_input_file(char *filename, int *number_of_processes) {
 
 
 /*
+Update statistics to be printed out at the end.
+*/
+void update_statistics(int time, int *total_turnaround, double *average_overhead, double *max_overhead, int arrival_time, int run_time) {
+        
+    int turnaround_time = time - arrival_time;
+
+    *total_turnaround += turnaround_time;
+
+    double time_overhead = ((double) turnaround_time) / ((double) run_time);
+
+    if (time_overhead > *max_overhead) {
+        *max_overhead = time_overhead;
+    }
+
+    *average_overhead += time_overhead;
+}
+
+
+/*
 Go through each cpu and give each first process one second of cpu time.
 - Check for and print finished processes first.
 - Check for and print running processes second.
@@ -94,7 +113,7 @@ Go through each cpu and give each first process one second of cpu time.
 This function would be a lot nicer if I didn't have to print out everything 
 in such a ridiculously specific order.
 */
-void run_one_second(multicore **cores, int *remaining_processes, int *time, int *total_turnaround, double *max_overhead, double *average_overhead) {
+void run_one_second(multicore **cores, linked_list **parallelized_processes, int *remaining_processes, int *time, int *total_turnaround, double *max_overhead, double *average_overhead) {
 
     // Sort cpu's on just cpu id.
     multicore_heapify(cores, true);
@@ -103,68 +122,46 @@ void run_one_second(multicore **cores, int *remaining_processes, int *time, int 
     cpu *current_cpu = NULL;
     process *first_process = NULL;
 
-    // Check how many processes will finish in this second
+    // Check status of processes after last second
     for (int j = (*cores)->last_index; j >= 1; j--) {
         current_cpu = ((*cores)->cpu_array)[j];
+        first_process = cpu_peek(current_cpu);
         if (cpu_is_empty(current_cpu) == true) {
             continue;
-        } else {
-            first_process = cpu_peek(current_cpu);
-        }
-        if (first_process->remaining_run_time == 0) {
-            
-            // TODO: edit this to handle sub-processes.
-            if (first_process->is_sub_process) {
-                // check if this is the last sub-process
-
-            }
-
-            (*remaining_processes)--;
-        }
-    }
-
-    // Check for and print finished processes first
-    for (int j = (*cores)->last_index; j >= 1; j--) {
-        current_cpu = ((*cores)->cpu_array)[j];
-
-        if (cpu_is_empty(current_cpu) == true) {
-            continue;
-        } else {
-            first_process = cpu_peek(current_cpu);
         }
         
-        // Check if process has finished.
-        if (first_process->remaining_run_time == 0) {
+        if (first_process->remaining_run_time == 0 && first_process->is_sub_process) {
+            // Sub-process has finished.
             
             // TODO: edit this to handle sub-processes.
-            if (first_process->is_sub_process) {
-                // check if this is the last sub-process
-
+            process *parent_process = find_parent(*parallelized_processes, first_process);
+            if (parent_process->sub_processes_remaining == 0 && parent_process->parent_finished_printed == false) {
+                // The last sub-process just finished: so the parent process is done too!
+                update_statistics(*time, total_turnaround, average_overhead, max_overhead, parent_process->arrival_time, parent_process->run_time);
+                print_process_finished(parent_process, *time, *remaining_processes);
+                parent_process->parent_finished_printed = true;
+                // TODO: Remove parent from linked_list (not essential)
+                // free(parent_process);  // TODO: only free this if you plan to remove parent from list
             }
+            // Take sub-process off cpu:
+            free(cpu_pop(&current_cpu));
 
-            // Calculate statistics
-            int turnaround_time = *time - first_process->arrival_time; 
-            *total_turnaround += turnaround_time;
-            double time_overhead = ((double) turnaround_time) / ((double) first_process->run_time);
-            *average_overhead += time_overhead;
-            if (time_overhead > *max_overhead) {
-                *max_overhead = time_overhead;
-            }
-
+        } else if (first_process->remaining_run_time == 0) {
+            // Actual process has finished
+            update_statistics(*time, total_turnaround, average_overhead, max_overhead, first_process->arrival_time, first_process->run_time);
             print_process_finished(first_process, *time, *remaining_processes);
+            // Take processes off cpu:
             free(cpu_pop(&current_cpu));
         }
     }
 
-    // Check for and print running processes.
+    // ACTUALLY DECREMENT TIME HERE.
+    // These value will all be checked in the next call of this function.
     for (int j = (*cores)->last_index; j >= 1; j--) {
         current_cpu = ((*cores)->cpu_array)[j];
         first_process = cpu_peek(current_cpu);
-
         if (cpu_is_empty(current_cpu) == true) {
             continue;
-        } else {
-            first_process = cpu_peek(current_cpu);
         }
 
         // Check if process is already running.
@@ -174,11 +171,26 @@ void run_one_second(multicore **cores, int *remaining_processes, int *time, int 
             print_process_running(first_process, *time, current_cpu->cpu_id);
         }
 
-        // ACTUALLY DECREMENT TIME HERE
+        // Decrement time variables.
+        // print_process(first_process);
         first_process->remaining_run_time--;
         current_cpu->total_remaining_run_time--;
+
+        // Decrement remaining_processes
+        if (first_process->remaining_run_time == 0 && first_process->is_sub_process) {
+            // TODO: edit this to handle sub-processes.
+            // check if this is the last sub-process
+            process *parent_process = find_parent(*parallelized_processes, first_process);
+            parent_process->sub_processes_remaining--;
+            if (parent_process->sub_processes_remaining == 0) {
+                (*remaining_processes)--;
+            }
+
+        } else if (first_process->remaining_run_time == 0) {
+            (*remaining_processes)--;   
+        }
     }
-    
+
     multicore_heapify(cores, false);
     (*time)++;
 }
@@ -215,17 +227,17 @@ int main(int argc, char **argv) {
             1. total remaining run-time
             2. cpu id
 
-    All of the processes that 'arrive' in one second are added to a temporary 
-    cpu (which no processes will run on). Every second, all of the processes on that cpu
-    are popped off, and added to the actual multicore in order of least run-time.
+    At the start of every second, all of the processes that 'arrive' in that second are 
+    added to a temporary cpu (which no processes will run on). Then, all of the processes on 
+    that cpu are popped off in order of least run-time, and added to the actual multicore.
 
     Every second, the multicore goes through every cpu (in order of cpu id) and runs
     each cpu for one second, until there are no more processes left to add, at which point
-    it just runs all the existing processes to completion.
+    it just runs all the existing processes on all it's cpu(s) to completion.
     */
 
     int time = 0;
-    int remaining_processes = 0;  // I think this actually means the number of processes that have arrived but not been started
+    int remaining_processes = 0;  // This actually means the number of processes that have arrived but not been started
     process *current_process = NULL;
     process *next_process = NULL;
     linked_list *parallelized_processes = create_list();
@@ -252,31 +264,36 @@ int main(int argc, char **argv) {
             i++;
         }
         
+        /*
+        TODO: 
+        - Add parallelised processes to the temp_process_buffer instead of adding them straight into the multicore.
+        - So if you get two parallelisable processes at the same time, stuff still works.
+        - Also change the loop so it adds all the para processes to cpu before adding any to multicore.
+        */
+
         // Now add all of the processes that have arrived in the last second to cpu(s).
         while (cpu_is_empty(temp_process_buffer) != true) {
 
             // TODO: watch out for this creating memory problems.
             process *process_to_add = cpu_pop(&temp_process_buffer);
-            assert(process_to_add);  // TODO: remove
+            // TODO: remove
+            assert(process_to_add);
 
-            if (process_to_add->is_parallelisable == true) {
-
-                // TODO: keep track of sub-processes somehow.
-
-                insert_process(&parallelized_processes, process_to_add);
-                
-
+            if (process_to_add->is_parallelisable == true) {            
 
                 // Split into sub-processes and add each of them to the cpu
-                // TODO: Maybe add these to the temp_process_buffer instead of adding them straight into the multicore? So if you get two parralielisable processes at the same time, stuff still works ???
                 int sub_process_quantity = min(number_of_processors, process_to_add->run_time);
-                int execution_time = process_to_add->run_time / sub_process_quantity + 1;  // TODO: integer division ok?
+                int execution_time = divide_round_int(process_to_add->run_time, sub_process_quantity) + 1;  // TODO: integer division ok?
                 for (int j = 0; j < sub_process_quantity; j++) {
                     process *new_sub_process = create_sub_process(process_to_add, execution_time, j);
                     // printf("New sub-process: ");
                     // print_process(new_sub_process);
                     multicore_add_process(&cores, new_sub_process);
                 }
+
+                // TODO: keep track of sub-processes somehow.
+                process_to_add->sub_processes_remaining = sub_process_quantity;
+                insert_process(&parallelized_processes, process_to_add);
                 remaining_processes++;
 
             } else {
@@ -295,17 +312,17 @@ int main(int argc, char **argv) {
             // print_multicore(cores);
             // return 0;
             while (multicore_has_process(cores) == true) {
-                run_one_second(&cores, &remaining_processes, &time, &total_turnaround, &max_overhead, &total_overhead);
+                run_one_second(&cores, &parallelized_processes, &remaining_processes, &time, &total_turnaround, &max_overhead, &total_overhead);
             }
             break;
 
         } else while (time < next_process->arrival_time) {
             // Run all the processes up till the next arrival time.
-            run_one_second(&cores, &remaining_processes, &time, &total_turnaround, &max_overhead, &total_overhead);
+            run_one_second(&cores, &parallelized_processes, &remaining_processes, &time, &total_turnaround, &max_overhead, &total_overhead);
         }
     }
 
-    print_list(parallelized_processes);
+    // print_list(parallelized_processes);
     
     printf("Turnaround time %d\n", divide_round_int(total_turnaround, number_of_processes));
     printf("Time overhead %g %g\n", round_double_to_2(max_overhead), round_double_to_2(total_overhead / number_of_processes));

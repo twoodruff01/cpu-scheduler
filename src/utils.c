@@ -95,6 +95,7 @@ process *process_from_row(int arrival_time, char *pid, int run_time, char parall
     new_process->remaining_run_time = run_time;
     new_process->is_running = false;
     new_process->is_sub_process = false;
+    new_process->parent_finished_printed = false;
 
     return new_process;
 }
@@ -125,6 +126,7 @@ process *create_sub_process(process *parent, int execution_time, int sub_number)
 
     new_sub_process->is_running = false;
     new_sub_process->is_sub_process = true;
+    new_sub_process->parent_finished_printed = false;
 
     return new_sub_process;
 }

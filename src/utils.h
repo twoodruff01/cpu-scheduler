@@ -14,6 +14,8 @@ typedef struct {
 
     bool is_running;
     bool is_sub_process;
+    int sub_processes_remaining;
+    bool parent_finished_printed;
 
 } process;
 
