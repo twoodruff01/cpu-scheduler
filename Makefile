@@ -12,11 +12,5 @@ BUILD_SRC = src/utils.o src/heap/cpu.o src/heap/multicore.o src/linked_list/link
 -B: $(BUILD_SRC)
 	$(CC) -o allocate $(BUILD_SRC) $(CFLAGS)
 
-
-DEV_SRC = src/utils.o src/heap/cpu.o src/heap/multicore.o src/heap/cpu_test.o
-heap: $(DEV_SRC)
-	$(CC) -o heap_program $(DEV_SRC) $(CFLAGS)
-
-
 clean:
 	rm -f allocate heap_program *.o src/*.o src/heap/*.o src/linked_list/*.o *.txt *.out *.gch
