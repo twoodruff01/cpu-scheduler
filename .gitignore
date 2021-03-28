@@ -13,3 +13,6 @@ allocate
 /.vscode
 
 heap_program
+
+!report.txt
+
