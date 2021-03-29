@@ -20,6 +20,9 @@ void swap_process(process *p1, process *p2) {
 }
 
 
+/*
+What do you think it does?
+*/
 void swap_process_pointers(process **p1, process **p2) {
     process *temp_process = *p1;
     *p1 = *p2;
@@ -30,8 +33,8 @@ void swap_process_pointers(process **p1, process **p2) {
 /*
 Returns true if the first 'process' is less than the second.
 Bases this 
-- first on remaining_time
-- second on PID
+1. on remaining_time
+2. on PID
 Assumes that PID's will never be equal.
 */
 bool process_less_than(process *p1, process *p2) {
@@ -73,7 +76,6 @@ bool pid_less_than(char *pid1, char *pid2) {
 
 /*
 Creates a process using the given values.
-Note that parallelisable is converted to boolean here.
 */
 process *process_from_row(int arrival_time, char *pid, int run_time, char parallelisable_char) {
     process *new_process = malloc(sizeof(process));
@@ -82,14 +84,14 @@ process *process_from_row(int arrival_time, char *pid, int run_time, char parall
     strcpy(new_process->pid, pid);
     new_process->run_time = run_time;
 
-    // Boolean is much easier to work with:
     if (parallelisable_char == 'n') {
         new_process->is_parallelisable = false;
     } else if (parallelisable_char == 'p') {
         new_process->is_parallelisable = true;
     } else {
-        // TODO: remove.
-        printf("Strange parallelisable input given in file: %c\n", parallelisable_char);
+        // Default to non-parallelisable for weird input.
+        // printf("Strange parallelisable input given in file: %c\n", parallelisable_char);
+        new_process->is_parallelisable = false;
     }
 
     // Process hasn't been given any CPU time yet:

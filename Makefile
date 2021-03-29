@@ -3,7 +3,7 @@ CC=gcc
 #TODO: Change flags before submission
 
 ### Submission ###
-# CFLAGS = -Wall -O3
+# CFLAGS = -Wall -g -lm
 
 ### Testing ###
 CFLAGS = -Wall -Wextra -W -Wshadow -g3 -lm
