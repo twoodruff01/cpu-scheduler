@@ -295,10 +295,3 @@ int main(int argc, char **argv) {
     free(all_processes);
     return 0;
 }
-
-/*
-Final TODO:
-- challenge algorithm - execution time of 1 ?
-- write report
-- submit "full 40-digit" hash on LMS (test by trying to checkout the hash)
-*/
