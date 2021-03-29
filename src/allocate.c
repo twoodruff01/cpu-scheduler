@@ -243,7 +243,7 @@ int main(int argc, char **argv) {
         next_process = all_processes[i + 1];
         if (current_process != NULL) {
 
-            if (run_custom_algorithm == true && current_process->run_time <= 2) {
+            if (run_custom_algorithm == true && current_process->run_time <= 3) {
                 cpu_push(&temp_process_buffer, current_process);
                 remaining_processes++;
             } else {
@@ -256,7 +256,7 @@ int main(int argc, char **argv) {
         while (next_process != NULL && next_process->arrival_time == current_process->arrival_time) {
             current_process = all_processes[i];
             next_process = all_processes[i + 1];
-            if (run_custom_algorithm == true && current_process->run_time <= 2) {
+            if (run_custom_algorithm == true && current_process->run_time <= 3) {
                 cpu_push(&temp_process_buffer, current_process);
                 remaining_processes++;
             } else {

@@ -1,1 +1,1 @@
-My algorithm doesn't parallelize a process if its run-time is 2 or less seconds.
+My algorithm doesn't parallelize a process if its run-time is 3 or less seconds.
