@@ -189,11 +189,14 @@ Splits up parallelizeable processes and adds all the sub-processes to the cpu,
 the parent process get's added to a linked list to keep track of it.
 - Only for use with the temp_process_buffer.
 */
-void add_and_split_processes(cpu **current_cpu, linked_list **parallelized_processes, process *new_process, int *remaining_processes, int num_processors) {
+void add_and_split_processes(cpu **current_cpu, linked_list **parallelized_processes, process *new_process, int *remaining_processes, int num_processors, bool run_custom_algorithm) {
 
     if (new_process->is_parallelisable == true) {            
         // Split into sub-processes and add each of them to the cpu
         int sub_process_quantity = min(num_processors, new_process->run_time);
+        if (run_custom_algorithm == true) {
+            sub_process_quantity--;
+        }
         int execution_time = divide_round_int(new_process->run_time, sub_process_quantity) + 1;
         new_process->sub_processes_remaining = sub_process_quantity;
         insert_process(parallelized_processes, new_process);
@@ -243,11 +246,11 @@ int main(int argc, char **argv) {
         next_process = all_processes[i + 1];
         if (current_process != NULL) {
 
-            if (run_custom_algorithm == true && current_process->run_time <= 7) {
+            if (run_custom_algorithm == true && current_process->run_time <= 2) {
                 cpu_push(&temp_process_buffer, current_process);
                 remaining_processes++;
             } else {
-                add_and_split_processes(&temp_process_buffer, &parallelized_processes, current_process, &remaining_processes, number_of_processors);
+                add_and_split_processes(&temp_process_buffer, &parallelized_processes, current_process, &remaining_processes, number_of_processors, run_custom_algorithm);
             }
             i++;
         }
@@ -256,11 +259,11 @@ int main(int argc, char **argv) {
         while (next_process != NULL && next_process->arrival_time == current_process->arrival_time) {
             current_process = all_processes[i];
             next_process = all_processes[i + 1];
-            if (run_custom_algorithm == true && current_process->run_time <= 7) {
+            if (run_custom_algorithm == true && current_process->run_time <= 2) {
                 cpu_push(&temp_process_buffer, current_process);
                 remaining_processes++;
             } else {
-                add_and_split_processes(&temp_process_buffer, &parallelized_processes, current_process, &remaining_processes, number_of_processors);
+                add_and_split_processes(&temp_process_buffer, &parallelized_processes, current_process, &remaining_processes, number_of_processors, run_custom_algorithm);
             }
             i++;
         }
