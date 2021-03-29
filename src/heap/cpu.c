@@ -144,8 +144,7 @@ Doesn't free processes on the cpu. If there are processes on it, you shouldn't b
 void free_cpu(cpu *current_cpu) {
 
     if (cpu_is_empty(current_cpu) != true) {
-        // TODO: remove.
-        printf("\n\n\nYou're freeing a CPU with processes still on it.\n\n\n");
+        // printf("\n\n\nYou're freeing a CPU with processes still on it.\n\n\n");
     }
     free(current_cpu->process_array);
     free(current_cpu);

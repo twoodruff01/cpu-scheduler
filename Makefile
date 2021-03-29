@@ -1,12 +1,10 @@
 CC=gcc
 
-#TODO: Change flags before submission
-
 ### Submission ###
-# CFLAGS = -Wall -g -lm
+CFLAGS = -Wall -g -lm
 
 ### Testing ###
-CFLAGS = -Wall -Wextra -W -Wshadow -g3 -lm
+# CFLAGS = -Wall -Wextra -W -Wshadow -g3 -lm
 
 BUILD_SRC = src/utils.o src/heap/cpu.o src/heap/multicore.o src/linked_list/linked_list.o src/allocate.o
 -B: $(BUILD_SRC)

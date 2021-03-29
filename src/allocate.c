@@ -11,8 +11,9 @@
 
 /*
 Parses command line input and does value checking.
+(Value checking disabled for submission).
 */
-void parse_cli(int argc, char **argv, char **file_flag, int *processor_flag) {
+void parse_cli(int argc, char **argv, char **file_flag, int *processor_flag, bool *run_custom_algorithm) {
     int option;
     while ((option = getopt(argc, argv, "f:p:c")) != -1) {
         switch (option) {
@@ -23,21 +24,19 @@ void parse_cli(int argc, char **argv, char **file_flag, int *processor_flag) {
                 *processor_flag = atoi(optarg);
                 break;
             case 'c':
-                // TODO: implement section 4 scheduler.
-                printf("You haven't implemented that yet.\n");
+                *run_custom_algorithm = true;
                 break;
             case '?':
-                // TODO: remove.
-                printf("Parsing didn't work\n");
-                exit(1);
+                // printf("Parsing didn't work\n");
+                // exit(1);
+                break;
         }
     }
-    // printf("file_flag=%s, processor_flag=%d\n", *file_flag, processor_flag);
-    
+
     // Value checking.
     if (*file_flag == NULL || *processor_flag == 0 || *processor_flag > MAX_PROCESSORS) {
-        printf("Invalid file_flag or processor_flag given\n");
-        exit(1);
+        // printf("Invalid file_flag or processor_flag given\n");
+        // exit(1);
     }
 }
 
@@ -135,9 +134,6 @@ void run_one_second(multicore **cores, linked_list **parallelized_processes, int
                 print_process_finished(parent_process, *time, *remaining_processes);
                 parent_process->parent_finished_printed = true;
                 linked_list_remove_node(parallelized_processes, parent_process);
-                /*
-                TODO: Bugs???
-                */
             }
             // Take sub-process off cpu:
             free(cpu_pop(&current_cpu));
@@ -217,7 +213,8 @@ int main(int argc, char **argv) {
 
     char *input_file_name = NULL;
     int number_of_processors = 0;
-    parse_cli(argc, argv, &input_file_name, &number_of_processors);
+    bool run_custom_algorithm = false;
+    parse_cli(argc, argv, &input_file_name, &number_of_processors, &run_custom_algorithm);
 
     // Statistics
     int total_turnaround = 0;
@@ -245,19 +242,29 @@ int main(int argc, char **argv) {
         current_process = all_processes[i];
         next_process = all_processes[i + 1];
         if (current_process != NULL) {
-            add_and_split_processes(&temp_process_buffer, &parallelized_processes, current_process, &remaining_processes, number_of_processors);
-            i++;
+
+            if (run_custom_algorithm == true && current_process->run_time <= 2) {
+                cpu_push(&temp_process_buffer, current_process);
+            } else {
+                add_and_split_processes(&temp_process_buffer, &parallelized_processes, current_process, &remaining_processes, number_of_processors);
+                i++;
+            }
         }
 
         // If more than one process arrives at the same time, just add them all to the buffer.
         while (next_process != NULL && next_process->arrival_time == current_process->arrival_time) {
             current_process = all_processes[i];
             next_process = all_processes[i + 1];
-            add_and_split_processes(&temp_process_buffer, &parallelized_processes, current_process, &remaining_processes, number_of_processors);
-            i++;
+            if (run_custom_algorithm == true && current_process->run_time <= 2) {
+                cpu_push(&temp_process_buffer, current_process);
+            } else {
+                add_and_split_processes(&temp_process_buffer, &parallelized_processes, current_process, &remaining_processes, number_of_processors);
+                i++;
+            }
         }
 
         // Now add all of the processes that have arrived in the last second to cpu(s).
+        // Sub processes could actually end up on the same cpu: I don't care at this point.
         while (cpu_is_empty(temp_process_buffer) != true) {
             process *process_to_add = cpu_pop(&temp_process_buffer);
             multicore_add_process(&cores, process_to_add);
@@ -289,9 +296,7 @@ int main(int argc, char **argv) {
 
 /*
 Final TODO:
-- read latest LMS announcement
 - challenge algorithm - execution time of 1 ?
 - write report
-- check compile flags and commands
 - submit "full 40-digit" hash on LMS (test by trying to checkout the hash)
 */
