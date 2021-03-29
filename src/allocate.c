@@ -247,8 +247,8 @@ int main(int argc, char **argv) {
                 cpu_push(&temp_process_buffer, current_process);
             } else {
                 add_and_split_processes(&temp_process_buffer, &parallelized_processes, current_process, &remaining_processes, number_of_processors);
-                i++;
             }
+            i++;
         }
 
         // If more than one process arrives at the same time, just add them all to the buffer.
@@ -259,8 +259,8 @@ int main(int argc, char **argv) {
                 cpu_push(&temp_process_buffer, current_process);
             } else {
                 add_and_split_processes(&temp_process_buffer, &parallelized_processes, current_process, &remaining_processes, number_of_processors);
-                i++;
             }
+            i++;
         }
 
         // Now add all of the processes that have arrived in the last second to cpu(s).
