@@ -245,6 +245,7 @@ int main(int argc, char **argv) {
 
             if (run_custom_algorithm == true && current_process->run_time <= 2) {
                 cpu_push(&temp_process_buffer, current_process);
+                remaining_processes++;
             } else {
                 add_and_split_processes(&temp_process_buffer, &parallelized_processes, current_process, &remaining_processes, number_of_processors);
             }
@@ -257,6 +258,7 @@ int main(int argc, char **argv) {
             next_process = all_processes[i + 1];
             if (run_custom_algorithm == true && current_process->run_time <= 2) {
                 cpu_push(&temp_process_buffer, current_process);
+                remaining_processes++;
             } else {
                 add_and_split_processes(&temp_process_buffer, &parallelized_processes, current_process, &remaining_processes, number_of_processors);
             }

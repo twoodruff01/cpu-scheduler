@@ -1,15 +1,1 @@
-Please submit a report explaining your scheduling algorithm and why it performs better than the default one.
-For this task the choice of when splitting a parallelisable process is left to you.
-
-The challenge task will be evaluated based on a set of 9 test casesprovided to you and your report.
-We will use these test cases to compare theMakespanof your schedulingalgorithm (with-coption) with the default one.
-
-A scheduling algorithm that improvesMakespan over the default algorithm on 
-2-4 of the 9 test cases will be awarded 0.5marks, 
-1 mark for improving on 5-7 test cases and 
-1.5 marks for improving on 8-9 test cases.
-
-
-
-50 or less words when you run wc -w report.txt.
-Report will get 0.5 of a mark if your algorithm improves a makespan on at least one of the 9 test cases.
+My algorithm doesn't parallelize a process if its run-time is 3 or less seconds.
