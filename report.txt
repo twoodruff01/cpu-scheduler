@@ -1,1 +1,5 @@
-My algorithm doesn't parallelize a process if its run-time is 2 or less seconds.
+My algorithm does two things:
+- Doesn't parallelize a process if its run-time is 2 or less seconds.
+- When it splits a process into sub-processes, it creates 1 less sub-process than the default algorithm would.
+
+Minimising k further than the default algorithm can result in lower makespan.
